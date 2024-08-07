@@ -10,10 +10,10 @@ import { ContributeIcon } from "../src/icons/ContributeIcon";
 import { ChangelogIcon } from "../src/icons/ChangelogIcon";
 
 export const metadata: Metadata = {
-  title: "POD | A Standard for Signed Data",
+  title: "POD | Provable Object Data",
   description:
     // eslint-disable-next-line max-len
-    "POD is a standard for signed data",
+    "POD is a standard for Provable Object Data",
   icons: "/images/logos/pod.svg",
 };
 

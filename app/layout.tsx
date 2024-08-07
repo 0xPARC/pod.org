@@ -23,10 +23,10 @@ const supplyMono = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "POD | A Standard for Signed Data",
+  title: "POD | Provable Object Data",
   description:
     // eslint-disable-next-line max-len
-    "POD is a standard for signed data",
+    "POD is a standard for Provable Object Data",
   icons: "/images/logos/pod.svg",
 };
 
@@ -41,7 +41,7 @@ export default function Layout({ children }: Props) {
             <div className="flex items-center justify-center mb-4">
               <Logo width="60" height="60" />
               <h1 className="text-4xl font-bold mb-4">
-                : Provable Object Datatype
+                : Provable Object Data
               </h1>
             </div>
             <p className="text-gray-600">
@@ -103,7 +103,7 @@ export default function Layout({ children }: Props) {
                 <h2 className="text-2xl font-bold">?</h2>
               </div>
               <p className="text-gray-700 mb-2">
-                POD (Provable Object Datatype) is a standard for creating and
+                POD (Provable Object Data) is a standard for creating and
                 verifying signed data. It uses cryptographic techniques to
                 ensure that the data has not been altered and is from a trusted
                 source.
