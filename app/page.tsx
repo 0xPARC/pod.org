@@ -8,7 +8,6 @@ import { StatusIcon } from "../src/icons/StatusIcon";
 import { CalendarIcon } from "../src/icons/CalendarIcon";
 import { ContributeIcon } from "../src/icons/ContributeIcon";
 import { ChangelogIcon } from "../src/icons/ChangelogIcon";
-import Landing from "../components/Landing";
 
 export const metadata: Metadata = {
   title: "POD | A Standard for Signed Data",
@@ -20,9 +19,6 @@ export const metadata: Metadata = {
 
 export default async function HomePage() {
   return (
-    <Landing/>
-  )
-  return (
     <>
       <div className="bg-mud">
         <div
@@ -30,7 +26,7 @@ export default async function HomePage() {
             "min-h-screen flex flex-col animate-in animate-duration-500 fade-in",
             "gap-12 p-8",
             "sm:justify-between",
-            "md:gap-16 md:p-16",
+            "md:gap-16 md:p-16"
           )}
         >
           <div className="flex items-center justify-between">
@@ -46,7 +42,13 @@ export default async function HomePage() {
               <LatticeIcon />
             </a>
           </div>
-          <div className={twMerge("grow flex flex-col md:flex-row-reverse", "gap-12", "md:gap-y-16")}>
+          <div
+            className={twMerge(
+              "grow flex flex-col md:flex-row-reverse",
+              "gap-12",
+              "md:gap-y-16"
+            )}
+          >
             <div className="grow md:grow-0 flex items-center md:items-end justify-center">
               <img
                 src="/images/logos/mud-white.svg"
@@ -59,7 +61,8 @@ export default async function HomePage() {
                   Battle-tested onchain framework for developers.
                 </div>
                 <p className="max-w-lg text-xl md:text-2xl [text-wrap:balance]">
-                  MUD provides you with the tools to build ambitious onchain applications.
+                  MUD provides you with the tools to build ambitious onchain
+                  applications.
                 </p>
               </div>
               <div className="flex gap-4">
@@ -83,12 +86,19 @@ export default async function HomePage() {
         </div>
       </div>
 
-      <div className={twMerge("bg-black flex flex-col", "gap-12 p-8", "md:gap-16 md:p-16")}>
+      <div
+        className={twMerge(
+          "bg-black flex flex-col",
+          "gap-12 p-8",
+          "md:gap-16 md:p-16"
+        )}
+      >
         <div className="space-y-6">
           <div className="space-y-2">
             <div className="font-mono uppercase text-2xl">Resources</div>
             <p className="text-lg text-white/60">
-              Discover more about the open source framework powering complex games & apps on Ethereum.
+              Discover more about the open source framework powering complex
+              games & apps on Ethereum.
             </p>
           </div>
           <div className="grid md:grid-cols-2 gap-4">
@@ -154,7 +164,9 @@ export default async function HomePage() {
         <div className="space-y-6">
           <div className="space-y-2">
             <div className="font-mono uppercase text-2xl">Projects</div>
-            <p className="text-lg text-white/60">Start using a wide ecosystem of projects powered by MUD.</p>
+            <p className="text-lg text-white/60">
+              Start using a wide ecosystem of projects powered by MUD.
+            </p>
           </div>
           <div className="grid md:grid-cols-2 gap-4">
             <a
@@ -172,7 +184,9 @@ export default async function HomePage() {
               </span>
               <span
                 className="row-start-1 col-start-1 bg-cover bg-center grayscale opacity-30 transition group-hover:grayscale-0 group-hover:opacity-50 group-hover:scale-105"
-                style={{ backgroundImage: "url('/images/projects/sky-strife.png')" }}
+                style={{
+                  backgroundImage: "url('/images/projects/sky-strife.png')",
+                }}
               />
             </a>
             <a
@@ -190,7 +204,9 @@ export default async function HomePage() {
               </span>
               <span
                 className="row-start-1 col-start-1 bg-cover bg-center grayscale opacity-30 transition group-hover:grayscale-0 group-hover:opacity-50 group-hover:scale-105"
-                style={{ backgroundImage: "url('/images/projects/opcraft.png')" }}
+                style={{
+                  backgroundImage: "url('/images/projects/opcraft.png')",
+                }}
               />
             </a>
             <a
@@ -208,7 +224,9 @@ export default async function HomePage() {
               </span>
               <span
                 className="row-start-1 col-start-1 bg-cover bg-center grayscale opacity-30 transition group-hover:grayscale-0 group-hover:opacity-50 group-hover:scale-105"
-                style={{ backgroundImage: "url('/images/projects/primodium.png')" }}
+                style={{
+                  backgroundImage: "url('/images/projects/primodium.png')",
+                }}
               />
             </a>
             <a
@@ -226,7 +244,9 @@ export default async function HomePage() {
               </span>
               <span
                 className="row-start-1 col-start-1 bg-cover bg-center grayscale opacity-30 transition group-hover:grayscale-0 group-hover:opacity-50 group-hover:scale-105"
-                style={{ backgroundImage: "url('/images/projects/words3.png')" }}
+                style={{
+                  backgroundImage: "url('/images/projects/words3.png')",
+                }}
               />
             </a>
           </div>
@@ -235,7 +255,9 @@ export default async function HomePage() {
         <div className="space-y-6">
           <div className="space-y-2">
             <div className="font-mono uppercase text-2xl">Find us</div>
-            <p className="text-lg text-white/60">Discover more MUD resources, and join our community online.</p>
+            <p className="text-lg text-white/60">
+              Discover more MUD resources, and join our community online.
+            </p>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
             <a
