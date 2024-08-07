@@ -39,27 +39,28 @@ export default function Layout({ children }: Props) {
         <div className="min-h-screen p-8 bg-gray-100">
           <div className="text-center mb-12">
             <div className="flex items-center justify-center mb-4">
-              <Logo width="60" height="60" />
-              <h1 className="text-4xl font-bold mb-4">
-                : Provable Object Data
-              </h1>
+              {/* <Logo width="60" height="60" /> */}
+              <h1 className="text-4xl font-bold mb-4">Provable Object Data</h1>
             </div>
             <p className="text-gray-600">
-              Ensuring data integrity and authenticity with cryptographic
-              signatures.
+              Ensuring data integrity and interoperability with cryptographic
+              proofs.
             </p>
           </div>
           <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
             <div className="bg-white p-6 rounded-lg shadow-md">
               <h2 className="text-2xl font-bold mb-4">Cryptographic Data</h2>
               <p className="text-gray-700 mb-2">
-                In today's interconnected world, data integrity and authenticity
-                are paramount. Signed data ensures that the information has not
-                been tampered with and is from a verified source.
+                In today's interconnected world, data integrity and
+                interoperability are paramount. Zero-knowledge proofs, such as
+                digital signatures or zk-SNARKs, ensure that the information has
+                not been tampered with and is from a verified source.
               </p>
               <p className="text-gray-700 mb-2">
-                With signed data, we can trust the data we receive, making it
-                crucial for applications in finance, healthcare, and more.
+                With proved data and various gadgets such as GPC or MP-FHE, we
+                can trust the data we receive and operations performed on that
+                data, making it crucial for applications in finance, healthcare,
+                and more.
               </p>
               <p className="text-gray-700">
                 POD provides a standardized way to sign and verify data,
@@ -69,26 +70,18 @@ export default function Layout({ children }: Props) {
             </div>
             <div className="bg-white p-6 rounded-lg shadow-md">
               <h2 className="text-2xl font-bold mb-4 text-center">
-                A Simple Example
+                Example POD
               </h2>
               <pre className="bg-gray-100 p-4 rounded-lg overflow-auto">
                 <code className="text-sm text-gray-800">{`{
   "entries": {
-    "firstName": {
+    "fullName": {
       "type": "string",
-      "value": "Przewalskishorse"
+      "value": "John Doe"
     },
-    "lastName": {
-      "type": "string",
-      "value": "Carter"
-    },
-    "owner": {
-      "type": "cryptographic",
-      "value": 5535221679929845327749972656435629562365334362558929317834631920100002295884
-    },
-    "socialSecurityNumber": {
-      "type": "string",
-      "value": "909-66-3848"
+    "dateOfBirth": {
+      "type": "int",
+      "value": 960595984999
     }
   },
   "signature": "hMLIKyrL69jZVR6cmArX41/0V6sTUODMjmFIAFAa/aCw1/p++Z+ccyuHYlJMYD3sug/Ces/lcs+GustfCMboBA",
@@ -98,20 +91,20 @@ export default function Layout({ children }: Props) {
             </div>
             <div className="bg-white p-6 rounded-lg shadow-md">
               <div className="flex items-center mb-4">
-                <h2 className="text-2xl font-bold">What is</h2>
-                <Logo width="40" height="40" />
-                <h2 className="text-2xl font-bold">?</h2>
+                <h2 className="text-2xl font-bold">What is POD?</h2>
+                {/* <Logo width="40" height="40" /> */}
+                {/* <h2 className="text-2xl font-bold"></h2> */}
               </div>
               <p className="text-gray-700 mb-2">
                 POD (Provable Object Data) is a standard for creating and
-                verifying signed data. It uses cryptographic techniques to
-                ensure that the data has not been altered and is from a trusted
-                source.
+                verifying cryptographic data. It uses cryptographic techniques
+                to ensure that the data has not been altered and is from a
+                trusted source.
               </p>
               <p className="text-gray-700 mb-2">
                 By using POD, developers can create secure applications that
-                rely on data integrity and authenticity. It is widely used in
-                various industries to protect sensitive information.
+                rely on data integrity and interoperability. It is widely used
+                in various industries to protect sensitive information.
               </p>
               <p className="text-gray-700">
                 The POD standard is designed to be easy to implement and
