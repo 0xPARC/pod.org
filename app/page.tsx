@@ -11,11 +11,11 @@ import { ChangelogIcon } from "../src/icons/ChangelogIcon";
 import Landing from "../components/Landing";
 
 export const metadata: Metadata = {
-  title: "MUD | Framework for onchain applications",
+  title: "POD | A Standard for Signed Data",
   description:
     // eslint-disable-next-line max-len
-    "MUD provides you with the tools to build onchain applications and autonomous worlds, with a framework and protocol that simplifies development on Ethereum and other EVM chains.",
-  icons: "/images/logos/circle/mud.svg",
+    "POD is a standard for signed data",
+  icons: "/images/logos/pod.svg",
 };
 
 export default async function HomePage() {

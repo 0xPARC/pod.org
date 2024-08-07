@@ -4,8 +4,8 @@ export default function Document() {
   return (
     <Html>
       <Head>
-        <link rel="apple-touch-icon" href="/images/logos/circle/mud.svg" />
-        <link rel="shortcut icon" type="image/svg" href="/images/logos/circle/mud.svg" />
+        <link rel="apple-touch-icon" href="/images/logos/pod.svg" />
+        <link rel="shortcut icon" type="image/svg" href="/images/logos/pod.svg" />
       </Head>
       <body>
         <Main />
