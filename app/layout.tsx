@@ -42,13 +42,13 @@ type Props = { children: ReactNode };
 export default function Layout({ children }: Props) {
   return (
     <div className="flex flex-col items-center w-full min-h-screen bg-gray-100">
-      <header className="w-full bg-primary text-primary-foreground p-6 h-24">
+      <header className="w-full bg-primary text-primary-foreground p-6 min-h-24">
         <h1 className="text-3xl font-bold">POD: Portable Object Datatype</h1>
       </header>
       <main className="flex-1 w-full">
         <section
           id="hero"
-          className="flex flex-col md:flex-row items-end p-6 bg-white rounded-md shadow-md h-[calc(100vh-96px)]"
+          className="flex flex-col md:flex-row items-end p-6 bg-white rounded-md shadow-md min-h-[calc(100vh-96px)]"
         >
           {/* <div className="w-full max-w-3xl space-y-4"> */}
           <div className="w-full md:w-1/2 space-y-4 pr-12">
@@ -69,7 +69,9 @@ export default function Layout({ children }: Props) {
               POD is built and supported by 0xPARC, and used by projects like
               Zupass, PODBox, Cursive, and more.
             </p>
-            <Button>DOCS</Button>
+            <button className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-md font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2">
+              DOCS
+            </button>
           </div>
           {/* </div> */}
           <div className="w-full md:w-1/2 mt-4 md:mt-0 md:ml-4 bg-gray-200 rounded-md overflow-x-auto">
@@ -128,7 +130,7 @@ export default function Layout({ children }: Props) {
             integrity can be verified. POD brings a much needed interoperability
             layer to Internet data.
           </p>
-          <p className="text-md mt-4">Examples:</p>
+          <p className="text-md mt-4 font-bold">Examples:</p>
           <li className="text-md mt-2">
             Show that I am over 21 from my California mobile driver license.
           </li>
@@ -161,10 +163,18 @@ export default function Layout({ children }: Props) {
         <section id="projects-using-pod" className="p-6 bg-white">
           <h1 className="text-3xl font-bold">Projects Using POD</h1>
           <div className="grid grid-cols-2 gap-4 mt-8">
-            <Button>Zupass</Button>
-            <Button>Meerkat</Button>
-            <Button>PODBox</Button>
-            <Button>Cursive</Button>
+            <button className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-md font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2">
+              Zupass
+            </button>
+            <button className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-md font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2">
+              Meerkat
+            </button>
+            <button className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-md font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2">
+              PODBox
+            </button>
+            <button className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-md font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2">
+              Cursive
+            </button>
           </div>
         </section>
       </main>
