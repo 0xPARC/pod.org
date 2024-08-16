@@ -2,16 +2,8 @@ import "tailwindcss/tailwind.css";
 
 import { Metadata } from "next";
 import { ReactNode } from "react";
-import { twMerge } from "tailwind-merge";
 import localFont from "next/font/local";
-import Logo from "../components/Logo";
-// import { Button } from "@/components/ui/button"
-
-const Button = ({ children }) => (
-  <button className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-md font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2">
-    {children}
-  </button>
-);
+import Link from "next/link";
 
 const supplyMono = localFont({
   src: "../public/fonts/PPSupplyMono-Regular.woff2",
@@ -31,9 +23,7 @@ const supplyMono = localFont({
 
 export const metadata: Metadata = {
   title: "POD | Provable Object Data",
-  description:
-    // eslint-disable-next-line max-len
-    "POD is a standard for Provable Object Data",
+  description: "POD is a standard for Provable Object Data",
   icons: "/images/logos/pod.svg",
 };
 
@@ -54,7 +44,6 @@ export default function Layout({ children }: Props) {
               id="hero"
               className="flex flex-col md:flex-row items-end p-6 bg-white rounded-md shadow-md min-h-[calc(100vh-96px)]"
             >
-              {/* <div className="w-full max-w-3xl space-y-4"> */}
               <div className="w-full md:w-1/2 space-y-4 pr-12">
                 <h2 className="text-2xl font-semibold">
                   Portable Object Datatype (POD) is a standard for cryptographic
@@ -73,11 +62,15 @@ export default function Layout({ children }: Props) {
                   POD is built and supported by 0xPARC, and used by projects
                   like Zupass, PODBox, Cursive, and more.
                 </p>
-                <button className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-md font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2">
+                <Link
+                  href="https://zupass.org/pod"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:bg-gray-100 inline-flex items-center justify-center whitespace-nowrap rounded-md text-md font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2"
+                >
                   DOCS
-                </button>
+                </Link>
               </div>
-              {/* </div> */}
               <div className="w-full md:w-1/2 mt-4 md:mt-0 md:ml-4 bg-gray-200 rounded-md overflow-x-auto">
                 <pre className="p-4 text-md text-left font-mono">{`
 {
@@ -168,18 +161,38 @@ export default function Layout({ children }: Props) {
             <section id="projects-using-pod" className="p-6 bg-white">
               <h1 className="text-3xl font-bold">Projects Using POD</h1>
               <div className="grid grid-cols-2 gap-4 mt-8">
-                <button className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-md font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2">
+                <Link
+                  href="https://zupass.org/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:bg-gray-100 inline-flex items-center justify-center whitespace-nowrap rounded-md text-md font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2"
+                >
                   Zupass
-                </button>
-                <button className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-md font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2">
+                </Link>
+                <Link
+                  href="https://forum.devcon.org/c/dip-discussion/6"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:bg-gray-100 inline-flex items-center justify-center whitespace-nowrap rounded-md text-md font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2"
+                >
                   Meerkat
-                </button>
-                <button className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-md font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2">
+                </Link>
+                <Link
+                  href="https://podbox.dev"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:bg-gray-100 inline-flex items-center justify-center whitespace-nowrap rounded-md text-md font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2"
+                >
                   PODBox
-                </button>
-                <button className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-md font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2">
+                </Link>
+                <Link
+                  href="https://www.cursive.team/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:bg-gray-100 inline-flex items-center justify-center whitespace-nowrap rounded-md text-md font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2"
+                >
                   Cursive
-                </button>
+                </Link>
               </div>
             </section>
           </main>
