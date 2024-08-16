@@ -22,8 +22,8 @@ const supplyMono = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "POD | Provable Object Data",
-  description: "POD is a standard for Provable Object Data",
+  title: "POD | Portable Object Datatype",
+  description: "POD is a standard for Portable Object Datatype",
   icons: "/images/logos/pod.svg",
 };
 

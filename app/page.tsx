@@ -10,10 +10,9 @@ import { ContributeIcon } from "../src/icons/ContributeIcon";
 import { ChangelogIcon } from "../src/icons/ChangelogIcon";
 
 export const metadata: Metadata = {
-  title: "POD | Provable Object Data",
+  title: "POD | Portable Object Datatype",
   description:
-    // eslint-disable-next-line max-len
-    "POD is a standard for Provable Object Data",
+    "Portable Object Datatype (POD) is a standard for cryptographic data",
   icons: "/images/logos/pod.svg",
 };
 
