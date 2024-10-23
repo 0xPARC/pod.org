@@ -158,7 +158,7 @@ export default function Layout({ children }: Props) {
                 above a specific threshold without revealing the actual amount.
               </p>
             </section>
-            <section id="projects-using-pod" className="p-6 bg-white">
+            {/* <section id="projects-using-pod" className="p-6 bg-white">
               <h1 className="text-3xl font-bold">Projects Using POD</h1>
               <div className="grid grid-cols-2 gap-4 mt-8">
                 <Link
@@ -194,7 +194,7 @@ export default function Layout({ children }: Props) {
                   Cursive
                 </Link>
               </div>
-            </section>
+            </section> */}
           </main>
         </div>
       </body>
