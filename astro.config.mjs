@@ -1,0 +1,68 @@
+// @ts-check
+import { defineConfig } from 'astro/config';
+import starlight from '@astrojs/starlight';
+import tailwind from '@astrojs/tailwind';
+
+// https://astro.build/config
+export default defineConfig({
+	server: {
+    port: 4374
+  },
+	integrations: [
+		starlight({
+      title: "pod.org",
+      social: {
+        github: "https://github.com/proofcarryingdata/zupass",
+        "x.com": "https://twitter.com/zupassproject",
+        telegram: "https://t.me/zupass"
+      },
+			components: {
+        SiteTitle: "./src/components/starlight/SiteTitle.astro"
+      },
+			sidebar: [
+				{
+					label: 'Home',
+					slug: 'docs',
+				},
+				{
+					label: 'POD',
+					items: [
+						{ label: 'Introduction', slug: 'pod/introduction' },
+						{ label: 'Getting Started', slug: 'pod/getting-started' },
+						{ label: 'POD Values and Types', slug: 'pod/values-and-types' },
+						{ label: 'Examples', slug: 'pod/examples' },
+						{ label: 'API Reference', slug: 'pod/api-reference' },
+					]
+				},
+				{
+					label: 'GPC',
+					items: [
+						{ label: 'Introduction', slug: 'gpc/introduction' },
+						{ label: 'Getting Started', slug: 'gpc/getting-started' },
+						{ label: 'Proof Configuration', slug: 'gpc/proof-configuration' },
+						{ label: 'Identity and Ownership', slug: 'gpc/identity-ownership' },
+						{ label: 'Examples', slug: 'gpc/examples' },
+						{ label: 'API Reference', slug: 'gpc/api-reference' },
+					]
+				},
+				{
+					label: 'Z API',
+					items: [
+						{ label: 'Introduction', slug: 'z-api/introduction' },
+						{ label: 'Getting Started', slug: 'z-api/getting-started' },
+						{ label: 'Queries', slug: 'z-api/queries' },
+						{ label: 'Ticket Proofs', slug: 'z-api/ticket-proofs' },
+						{ label: 'Glossary', slug: 'z-api/glossary' },
+						{ label: 'API Reference', slug: 'z-api/api-reference' },
+					]
+				},
+				{
+					label: 'POD extensions',
+					autogenerate: { directory: 'pod-extensions' },
+				}
+			],
+			customCss: ['./src/tailwind.css'],
+		}),
+		tailwind({ applyBaseStyles: false }),
+	],
+});
