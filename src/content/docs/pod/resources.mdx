@@ -1,0 +1,27 @@
+---
+title: Developer Resources
+description: Where to find more info
+---
+
+The POD and GPC libraries are available for JavaScript/TypeScript developers.  Start by looking at the [tutorial code here](https://github.com/proofcarryingdata/zupass/tree/main/examples/pod-gpc-example), then you can take a look at the specific packages listed below.
+
+All code is open-source and available in the Zupass [repo](https://github.com/proofcarryingdata/zupass).  Detailed documentation is at [docs.pcd.team](https://docs.pcd.team/).  We hope you'll give them a try and [tell us](mailto:support@zupass.org) what you think.
+
+## POD Packages
+
+### @pcd/pod
+
+Links: [NPM](https://www.npmjs.com/package/@pcd/pod), [tutorial](https://github.com/proofcarryingdata/zupass/blob/main/examples/pod-gpc-example/src/podExample.ts), [docs](https://docs.pcd.team/modules/_pcd_pod.html), [code](https://github.com/proofcarryingdata/zupass/tree/main/packages/lib/pod)
+
+Allows creation and signing of PODs, and manipulation of their keys and values.
+
+### @pcd/pod-pcd
+
+Links: [NPM](https://www.npmjs.com/package/@pcd/pod-pcd), [tutorial](https://github.com/proofcarryingdata/zupass/blob/main/examples/pod-gpc-example/src/podExample.ts#L214), [docs](https://docs.pcd.team/modules/_pcd_pod_pcd.html), [code](https://github.com/proofcarryingdata/zupass/tree/main/packages/pcd/pod-pcd)
+
+Allows PODs to be issued by Podbox, stored in Zupass, and requested and manipulated in all the ways enabled by the PCD framework.  A PODPCD can be displayed in Zupass with a user-friendly image and description, or as raw POD entries.
+
+## Related APIs
+
+- Proofs about PODs can be made using [GPCs](/gpc/introduction)
+- Interact with PODs in Zupass using the [Z API](/z-api/introduction)
