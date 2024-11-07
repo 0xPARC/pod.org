@@ -29,9 +29,11 @@ export default defineConfig({
 					items: [
 						{ label: 'Introduction', slug: 'pod/introduction' },
 						{ label: 'Getting Started', slug: 'pod/getting-started' },
-						{ label: 'POD Values and Types', slug: 'pod/values-and-types' },
+						{ label: 'POD Names and Schemas', slug: 'pod/names' },
+						{ label: 'POD Values and Types', slug: 'pod/values' },
 						{ label: 'Examples', slug: 'pod/examples' },
 						{ label: 'API Reference', slug: 'pod/api-reference' },
+						{ label: 'Disclaimers', slug: 'pod/disclaimers' },
 					]
 				},
 				{
@@ -41,8 +43,10 @@ export default defineConfig({
 						{ label: 'Getting Started', slug: 'gpc/getting-started' },
 						{ label: 'Proof Configuration', slug: 'gpc/proof-configuration' },
 						{ label: 'Identity and Ownership', slug: 'gpc/identity-ownership' },
+						{ label: 'Circuit Artifacts', slug: 'gpc/artifacts' },
 						{ label: 'Examples', slug: 'gpc/examples' },
 						{ label: 'API Reference', slug: 'gpc/api-reference' },
+						{ label: 'Disclaimers', slug: 'gpc/disclaimers' },
 					]
 				},
 				{
