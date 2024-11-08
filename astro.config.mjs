@@ -32,7 +32,7 @@ export default defineConfig({
 						{ label: 'POD Names and Schemas', slug: 'pod/names' },
 						{ label: 'POD Values and Types', slug: 'pod/values' },
 						{ label: 'Examples', slug: 'pod/examples' },
-						{ label: 'API Reference', slug: 'pod/api-reference' },
+						{ label: 'Developer Resources', slug: 'pod/resources' },
 						{ label: 'Disclaimers', slug: 'pod/disclaimers' },
 					]
 				},
@@ -45,7 +45,7 @@ export default defineConfig({
 						{ label: 'Identity and Ownership', slug: 'gpc/identity-ownership' },
 						{ label: 'Circuit Artifacts', slug: 'gpc/artifacts' },
 						{ label: 'Examples', slug: 'gpc/examples' },
-						{ label: 'API Reference', slug: 'gpc/api-reference' },
+						{ label: 'Developer Resources', slug: 'gpc/resources' },
 						{ label: 'Disclaimers', slug: 'gpc/disclaimers' },
 					]
 				},
