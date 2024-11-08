@@ -3,4 +3,28 @@ title: Getting Started
 description: First steps with the GPC SDK
 ---
 
-TODO: Package installation and hello world code.
+import { PackageManagers } from "starlight-package-managers";
+
+The `@pcd/gpc` package allows you to prove and verify using GPCs.  This guide will walk you through how to get started with POD development. The examples below assuming you're using TypeScript, but the same steps will work from JavaScript as well.
+
+You can find full information about the types and functions used here in the [API Reference](https://docs.pcd.team/modules/_pcd_gpc.html).  If you prefer to read complete working code, check out the [tutorial example](https://github.com/proofcarryingdata/zupass/blob/main/examples/pod-gpc-example/src/gpcExample.ts).
+
+## Installation
+
+To get started with GPCs, you will need to install the `@pcd/pod` package, using your preferred package manager:
+
+<PackageManagers
+  frame="none"
+  pkgManagers={["npm", "yarn", "pnpm", "bun"]}
+  pkg="@pcd/gpc"
+/>
+
+The package is available in CJS or ESM format, and will work either in browser or in a server. The example code makes use of bigint literals, so requries a target of at least ES2020.
+
+Packaging for a browser requires polyfill for some Node modules, including `buffer` and `constants`, so watch for that if you see any dependency issues.
+
+There is a known issue with a dependency `fastfile` which can be resolved by polyfilling `constants` as you can see in [this example](https://github.com/proofcarryingdata/zukyc/pull/3).
+
+## TODO...
+
+TODO: Finish
