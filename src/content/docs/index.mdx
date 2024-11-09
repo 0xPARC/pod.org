@@ -16,3 +16,31 @@ hero:
   tagline: Open source libraries for provable data and programmable cryptography
 
 ---
+### Portable Object Datatype (POD) is a standard for cryptographic data
+
+POD enables internet users to store data that preserve its integrity. This leads to a more interoperable and privacy preserving Internet: users can save their data and send it to other consumers, which can then verify that the data has not been modified. Cryptographic operations can be efficiently computed to redact, transform, and aggregate the content of one or more PODs while maintaining end-to-end verifiability.
+
+POD is built and supported by [0xPARC](https://0xparc.org), and used by projects like [Zupass](https://zupass.org), [PODBox](https://podbox.dev), [Devcon](https://devcon.org), [Meerkat](https://meerkat.events), and more.
+
+### Why POD?
+
+#### Enable Internet users to store and own their data
+
+Unlike traditional data received from Web APIs, PODs can be saved by users and sent to other consumers without losing their integrity. The signature of a POD enforces that the content has not been modified. Data can now be moved across different websites and devices and remain self-verifying.
+
+#### Make data interoperable across the Internet
+
+The POD standard is designed to make cryptographic operations on their content cheap and efficient — even on resource constrained devices like mobile phones & embedded systems. They can be redacted, transformed, and aggregated in a provable way, enabling data to cross trust boundaries.
+
+This means that services issuing PODs do not need to predict ahead of time all use cases for their data. Instead, a POD can be ingested by cryptographic gadgets to create “just-in-time” APIs whose integrity can be verified. POD brings a much needed interoperability layer to Internet data.
+
+**Examples**:
+- Show that I am over 21 from my California mobile driver license.
+- Show a loan provider that I am earning more than X dollars a year from my paystub
+- Aggregate 200 individual gems from an RPG, and bundle it with a unique item to generate a new weapon.
+
+#### Present information in a privacy preserving way
+
+With PODs, it becomes possible to take data from different sources — paystubs, government identities, ticketing systems — and prove to third-party Internet services that a subset of this data is correct, optionally with some logic applied to it. This primitive enables just enough information to be handed to a data consumer.
+
+As an example, a loan provider can verify a proof of income via a cryptographic proof on a PODified paystub. Most of the paystub data can be redacted, and the total salary can be shown to be above a specific threshold without revealing the actual amount.
