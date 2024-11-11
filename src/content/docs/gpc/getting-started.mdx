@@ -4,6 +4,7 @@ description: First steps with the GPC SDK
 ---
 
 import { PackageManagers } from "starlight-package-managers";
+import { Aside } from '@astrojs/starlight/components';
 
 The `@pcd/gpc` package allows you to prove and verify using GPCs.  This guide will walk you through how to get started with POD development. The examples below assuming you're using TypeScript, but the same steps will work from JavaScript as well.
 
@@ -25,6 +26,155 @@ Packaging for a browser requires polyfill for some Node modules, including `buff
 
 There is a known issue with a dependency `fastfile` which can be resolved by polyfilling `constants` as you can see in [this example](https://github.com/proofcarryingdata/zukyc/pull/3).
 
-## TODO...
+## Imports
 
-TODO: Finish
+Next, import the types and functions you need from the package.  See the [API Reference](https://docs.pcd.team/modules/_pcd_gpc.html) for everything which is available, and import what you need as you write your code.  Here's an example covering the first few samples below:
+
+```ts wrap=true title="gpc.ts"
+import { 
+  gpcArtifactDownloadURL,
+  GPCProofConfig, gpcProve,
+  gpcVerify
+} from "@pcd/gpc";
+```
+
+## Prove or verify?
+
+The GPC library allows you to create and verify zero knowledge proofs about PODs.  Depending on your use case, your app may need to prove, or verify, or both.  You may need to so either client-side (in browser) or server-side.
+
+If you intend to integrate with Zupass, you can use the [Z-API](/z-api/introduction) to query the user's PODs, and request proofs about them without using the GPC library directly.  In that case, you can skip ahead to the verification section of this guide.
+
+This remainder of this guide walks through the steps to both prove and verify in your own app in a browser.
+
+## Preparing Inputs
+
+### PODs
+
+In order to make a proof, you first need some PODs.  The examples below will work with the example POD signed in [POD Tutorial](/pod/getting-started).  Check out that page first to learn how to work with PODs.
+
+### Artifacts
+
+Proving and verifying also requires binary files called artifacts, which are tailored to a specific GPC circuit.  The prover and verifier need to use the same artifacts for proofs to be valid.  Artifacts released separately from the code since they're large enough not to be packaged with your app bundle.  You can obtain artifacts from NPM or direct download.
+
+See the [Circuit Artifacts](/gpc/artifacts) page for full details about how to manage artifacts.  For this example, we'll fetch them from a CDN backed by NPM.
+
+```ts wrap=true title="gpc.ts"
+  const artifactURL = gpcArtifactDownloadURL(
+    "jsdelivr",
+    "prod",
+    undefined
+  )
+```
+
+## Proof Configuration
+
+To make a proof, you first have to say what you want to prove.  A `GPCProofConfiguration` specifies the POD entries you want to prove, and the constraints you want to apply to them.  The [Proof Configuration](/gpc/proof-configuration) page has full details, but let's start with a simple configuration.  This will prove that the ID POD has a birthdate earlier than Nov 11 2003, and reveal the holder's name.
+
+```ts wrap=true title="gpc.ts"
+const proofConfig: GPCProofConfig = {
+  pods: {
+    idcard: {
+      entries: {
+        name: { isRevealed: true },
+        date_of_birth: {
+          isRevealed: false,
+          inRange: { min: 0n, max: 1068508800000n }
+        }
+      }
+    }
+  }
+};
+```
+
+<Aside type="note" title="Ownership">
+Note that this configuration proves that the POD is properly signed, but doesn't perform an ownership check to see that the prover has the privat key corresponding to the public key in the `cardholder` entry.  To add that extra safety check, check out the [Identity and Ownership](/pod/identity-ownership) page.
+</Aside>
+
+## Make a proof
+
+With all the preparation in place you can format the inputs to make your first ZK proof!  The `proofInputs` argument lets you match up real PODs with the names used in the configuration.
+
+```ts wrap=true title="gpc.ts"
+  const proofInputs = {
+    pods: {
+      idcard: myPOD
+    }
+  }
+  const { proof, boundConfig, revealedClaims } = await gpcProve(
+    proofConfig,
+    proofInputs,
+    artifactURL
+  );
+```
+
+The result of proving includes 3 types of data:
+
+- `proof` is the cryptrographic proof of correctness.  These are opaque numbers which can be used to verify the correctness of the rest.
+- `boundConfig` is the same as the configuration you passed in, except it now contains the identifier of the specific circuit which was auto-selected for the proof.
+- `revealedClaims` contains the information revealed in this proof.  In this case, it includes the `name` entry, as well as the public key of the ID card's signer.
+
+## Transmit the proof as JSON
+
+Usually the prover and verifier won't be the same app (otherwise there would be no need for a proof).  The results of `gpcProve()` are precisely the values which need to be sent to the verifier.
+
+You can send these objects across the network using JSON.  However, they contain non-JSON-compatible types such as `bigint` so they need to be converted before transmission.
+
+```ts wrap=true title="gpc.ts"
+  const proofMessage = JSON.stringify({
+    proof: proof,
+    boundConfig: boundConfigToJSON(boundConfig),
+    revealedClaims: revealedClaimsToJSON(revealedClaims)
+  });
+```
+
+The verifier can reverse the conversion to recover the original objects.  The conversion also fully validates the structure of the objects, and will throw an error if they are malformed.
+
+```ts wrap=true title="gpc.ts"
+  const receivedFromProver = JSON.parse(proofMessage);
+  const proof = receivedFromProver.proof;
+  const boundConfig = boundConfigFromJSON(receivedFromProver.boundConfig);
+  const revealedClaims = revealedClaimsFromJSON(receivedFromProver.revealedClaims);
+```
+
+## Verify the proof
+
+Finally the verifier can confirm that the proof is valid using `gpcVerify()`.  This needs all three parts of the proof result, as well as the same artifact download URL used by the prover.
+
+```ts wrap=true title="gpc.ts"
+  const isValid = gpcVerify(
+    proof,
+    boundConfig,
+    revealedClaims,
+    artifactURL
+  );
+```
+
+## Check assumptions
+
+If `gpcVerify()` returns true, you know you have a valid proof of **something**, but it's still important to confirm it's the right proof.  The logic inside `gpcVerify()` ensures that all the contents of the config and revealed claims properly correspond to each other, but it can't decide whether they match your app's expectations.
+
+To avoid being fooled by cheating provers, should check:
+
+- The signer's public key is the one you expect.  Trusted issuers, such as Zupass should publish their public keys.
+- The configuration reflects what you wanted to prove.
+
+Finally you should remember to examine the revealed entries.  In this case the user's name was revealed, so it could be used to record their admittance to an event.
+
+<Aside type="note" title="Checking Requested Configuration">
+If the prover can use any configuration, it's can be hard to know if they're proving the right thing.  It could require examining each entry in the config one by one.  See the [Verification](/gpc/verification) page for a full discussion.
+
+In many cases, though, it's the verifier who provides the configuration when they request a proof.  In this case there's an easy way for the verifier to be sure the proof matches the config they requested.  They can use their original config to call `gpcVerify()`.  All they need from the prover is the circuit identifier.  Code to do this check might do something like this:
+
+```ts wrap=true title="gpc.ts"
+  const verifyConfig: GPCBoundConfig = {
+    ...requestedConfig,
+    circuitIdentifier: boundConfig.circuitIdentifier
+  }
+  const isValid = gpcVerify(
+    proof,
+    verifyConfig,
+    revealedClaims,
+    artifactURL
+  );
+```
+</Aside>

@@ -43,6 +43,7 @@ export default defineConfig({
 						{ label: 'Getting Started', slug: 'gpc/getting-started' },
 						{ label: 'Proof Configuration', slug: 'gpc/proof-configuration' },
 						{ label: 'Identity and Ownership', slug: 'gpc/identity-ownership' },
+						{ label: 'Verifying Securely', slug: 'gpc/verification' },
 						{ label: 'Circuit Artifacts', slug: 'gpc/artifacts' },
 						{ label: 'Examples', slug: 'gpc/examples' },
 						{ label: 'Developer Resources', slug: 'gpc/resources' },

@@ -59,7 +59,7 @@ const myEntries: PODEntries = {
   },
   cardholder: {
     type: "eddsa_pubkey",
-    value: "eNrg5aYuoHKsJulwbG4nxI9pExcU3lEDjdaRP5APgwA"
+    value: "ZnU07tyAUiWW2mmY3/z4aa3WxrctfSc0ch23752z6xM"
   },
   pod_type: { type: "string", value: "dmv.license" },
 };
@@ -85,7 +85,7 @@ PODs can be signed by issuers, or by individual users. If your app issues PODs, 
   const cid = myPOD.contentID;
 ```
 
-You can access the `signature` and `signerPublicKey` fields to see the results. 
+You can access the `signature` and `signerPublicKey` fields to see the results.
 
 Once a POD is Merklized and signed, it is immutable.  The root of the Merkle tree is available in the `contentID` field which uniquely identifies the (unsigned) contents of this POD. The content ID is like a hash (actually the root of a Merkle tree) in that the same entries will always result in the same content ID.
 
