@@ -1,0 +1,167 @@
+---
+title: Getting Started 
+description: First steps with the POD SDK
+---
+
+import { PackageManagers } from "starlight-package-managers";
+import { Aside } from '@astrojs/starlight/components';
+
+The `@pcd/pod` package allows you to sign, verify, and manipulate data in the POD format.  This guide will walk you through how to get started with POD development. The examples below assuming you're using TypeScript, but the same steps will work from JavaScript as well.
+
+You can find full information about the types and functions used here in the [API Reference](https://docs.pcd.team/modules/_pcd_pod.html).  If you prefer to read complete working code, check out the [tutorial example](https://github.com/proofcarryingdata/zupass/blob/main/examples/pod-gpc-example/src/podExample.ts).
+
+## Installation
+
+To get started with PODs, you will need to install the `@pcd/pod` package, using your preferred package manager:
+
+<PackageManagers
+  frame="none"
+  pkgManagers={["npm", "yarn", "pnpm", "bun"]}
+  pkg="@pcd/pod"
+/>
+
+The package is available in CJS or ESM format, and will work either in browser or in a server. The example code makes use of bigint literals, so requries a target of at least ES2020.
+
+Packaging for a browser requires polyfill for some Node modules, including `buffer`, so watch for that if you see any dependency issues.
+
+## Imports
+
+Next, import the types and functions you need from the package.  See the [API Reference](https://docs.pcd.team/modules/_pcd_pod.html) for everything which is available, and import what you need as you write your code.  Here's an example covering the first few samples below:
+
+```ts wrap=true title="pod.ts"
+import { POD, PODEntries } from "@pcd/pod";
+```
+
+## POD Entries
+
+A POD is made up of entries (the [PODEntries](https://docs.pcd.team/types/_pcd_pod.PODEntries.html) type), each containing a name ([PODName](https://docs.pcd.team/types/_pcd_pod.PODName.html)) and a value ([PODValue](https://docs.pcd.team/types/_pcd_pod.PODValue.html)).You can read more details and recommendations about POD [names](names) and [values](values) later in this guide.
+
+
+In TypeScript code, all values have an explicit type specifier. Let's declare some sample entries, modeling a digital driver's license.  
+
+```ts wrap=true title="pod.ts"
+const myEntries: PODEntries = {
+  name: {
+    type: "string",
+    value: "Filip Frog"
+  },
+  date_of_birth: {
+    type: "date",
+    value: new Date("1999-03-20T00:00:00.000Z")
+  },
+  postcode: {
+    type: "int",
+    value: 94107n
+  },
+  driver: {
+    type: "boolean",
+    value: true
+  },
+  cardholder: {
+    type: "eddsa_pubkey",
+    value: "ZnU07tyAUiWW2mmY3/z4aa3WxrctfSc0ch23752z6xM"
+  },
+  pod_type: { type: "string", value: "dmv.license" },
+};
+```
+
+<Aside type="note" title="Semaphore Identities">
+Semaphore identities are how GPCs determine ownership of PODs. In a real app the `cardholder` value above be the owner's public key, which is part of their Semaphore identity. You might obtain from Zupass using the [Z API](/z-api/introduction), or create a new identity using the [Semaphore libary](https://www.npmjs.com/package/@semaphore-protocol/identity).
+</Aside>
+
+## Sign a POD
+
+A POD is always signed by some issuer. To sign a new POD you need a private key, which can be any 32 bytes, as a string in either hexadecimal or Base64.  These should be randomly generated in a secure way.
+
+<Aside type="note" title="Signing Keys">
+PODs can be signed by issuers, or by individual users. If your app issues PODs, you should store your signing key in your app server, and sign PODs server-side to avoid revealing your private key to users.  Users can also sign PODs with their own keys, which could be stored client-side. A user's Zupass identity includes private key which can be used to sign PODs using the [Z API](/z-api/introduction).
+</Aside>
+
+```ts wrap=true title="pod.ts"
+  const signingKey = "AAECAwQFBgcICQABAgMEBQYHCAkAAQIDBAUGBwgJAAE";
+  const myPOD = POD.sign(myEntries, signingKey);
+  const sig = myPOD.signature;
+  const pubKey = myPOD.signerPublicKey;
+  const cid = myPOD.contentID;
+```
+
+You can access the `signature` and `signerPublicKey` fields to see the results.
+
+Once a POD is Merklized and signed, it is immutable.  The root of the Merkle tree is available in the `contentID` field which uniquely identifies the (unsigned) contents of this POD. The content ID is like a hash (actually the root of a Merkle tree) in that the same entries will always result in the same content ID.
+
+
+## Verify a Signature
+
+If you receive a POD from an untrusted source, it's always a good idea to verify the signature. An invalid signature will make it impossible
+to generate ZK proofs of the POD.
+
+```ts wrap=true title="pod.ts"
+  if (!myPOD.verifySignature()) {
+    throw new Error("Bad POD!");
+  }
+```
+
+## POD Contents
+
+Inside a POD is a PODContent object which acts as a Map-like object for accessing the POD's entries. The PODContent class also forms the Merkle tree in which the entries are cryptographically arranged to calculate the content ID.
+
+Merklization happens lazily on-demand, with the result cached to avoid duplicated effort. The PODContent class can also generate Merkle membership proofs for individual entries, which are needed for GPC
+proving.
+
+```ts wrap=true title="pod.ts"
+  const postcode = myPOD.content.getValue("postcode");
+  const driverProof = myPOD.content.generateEntryProof("driver");
+```
+
+## JSON Serialization
+
+PODs, and related types like entries are not directly stringifiable due to the use of bigints, and class objects. There are supported
+conversion functions for all types to/from JSON compatible types which can be used for serialization via `JSON.stringify`.
+
+You can find TypeScript types with the `JSON` prefix added to the primary type: e.g. `POD` to `JSONPOD`, `PODValue` to `JSONPODValue`, etc. The conversion functions also validate that all the data is legal and well-formed.
+
+```ts wrap=true title="pod.ts"
+  const jsonPOD: JSONPOD = myPOD.toJSON();
+  const serializedPOD: string = JSON.stringify(jsonPOD);
+
+  const jsonValue: JSONPODValue = podValueToJSON(
+    myPOD.content.getValue("driver")!
+  );
+  const serializedValue: string = JSON.stringify(jsonValue);
+```
+
+The JSON format is optimized to be human-readable as well as short.  It omits type information in cases where the types can be properly derived from standard JSON types.
+
+```json wrap=true title="myPOD.json"
+{
+  "entries": {
+    "cardholder": {
+      "eddsa_pubkey": "eNrg5aYuoHKsJulwbG4nxI9pExcU3lEDjdaRP5APgwA"
+    },
+    "date_of_birth": {
+      "date": "1999-03-20T00:00:00.000Z"
+    },
+    "driver": true,
+    "name": "Filip Frog",
+    "pod_type": "dmv.license",
+    "postcode": 94107
+  },
+  "signature": "FjsZefQkMbMeltBv83SWGAbdphBrZqtmNukkwERQeAG71Boc+E9iOZO6tMQFBNwkNWGpY1J30GLOPzvyXytPAA",
+  "signerPublicKey": "xDP3ppa3qjpSJO+zmTuvDM2eku7O4MKaP2yCCKnoHZ4"
+}
+```
+
+Deserialization can be performed by performing the reverse conversion after calling `JSON.parse`. This conversion also fully validates the input and will throw if the data is malformed.
+
+```ts wrap=true title="pod.ts"
+  const receivedPOD: POD = POD.fromJSON(JSON.parse(serializedPOD));
+  const receivedValue: PODValue = podValueFromJSON(
+    JSON.parse(serializedValue)
+  );
+```
+
+## What's next?
+
+Check out the rest of the pages of this guide for deeper dives on various aspects of PODs, or read about how [GPCs](/gpc/introduction) make ZK proofs about PODs easy.
+
+Check the [Developer Resources](resources) for links to references to related packages.

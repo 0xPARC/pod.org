@@ -1,0 +1,41 @@
+---
+title: Introduction
+description: What is POD? 
+---
+
+Provable Object Datatype (**POD**) is a standard for cryptographic data.
+
+POD enables internet users to store data that preserve its integrity. This leads to a more interoperable and privacy preserving Internet: users can save their data and send it to other consumers, which can then verify that the data has not been modified. Cryptographic operations can be efficiently computed to redact, transform, and aggregate the content of one or more PODs while maintaining end-to-end verifiability.
+
+POD libraries enable any app to create zero-knowledge proofs of cryptographic data. Using POD, developers can create ZK-enabled apps without the effort and risk of developing custom cryptography. ZK proofs about PODs use General Purpose Circuits (**GPC**) which can prove many different things about PODs without revealing all details. GPCs use human-readable configuration and pre-compiled circuits so no knowledge of circuit programming is required.
+
+What [Zupass](https://zupass.org) has enabled with event tickets, PODs enable for all sorts of user data in all sorts of apps.  A POD could be your proof of attending an event, a secure message, a collectible badge, or an item in a role-playing game. PODs and GPCs can be used in Zupass, or in your own apps without Zupass.
+
+POD is built and supported by [0xPARC](https://0xparc.org), and used by projects like [Zupass](https://zupass.org), [PODBox](https://podbox.dev), [Meerkat](https://meerkat.events/), [Devcon Passport](https://app.devcon.org/), and more.
+
+## What is a POD?
+
+To a user, a POD is a piece of cryptographic data attested by some issuing authority. For a developer, a POD object is a key-value store which can hold any data. The whole POD is signed by an issuer. Apps can verify the signature, to trust the authenticity of the values in the POD.
+
+When a POD is issued, its entries (key-value pairs) are hashed as part of a [Merkle tree](https://en.wikipedia.org/wiki/Merkle_tree).  This allows GPCs to selectively prove about individual entries without revealing the whole POD.
+
+```ts
+const podSword = POD.sign(
+  {
+    pod_type: { type: "string", value: "myrpg.item.weapon" },
+    attack: { type: "int", value: 7n },
+    reach: { type: "int", value: 5n },
+    weaponType: { type: "string", value: "sword" },
+    itemSet: { type: "string", value: "celestial" },
+    isMagical: { type: "boolean", value: true },
+    owner: { type: "eddsa_pubkey", value: purchaser.pubKey }
+  } satisfies PODEntries,
+  privateKey
+);
+```
+
+Zero-knowledge proofs about PODs can be made efficiently and flexibly with [GPCs](/gpc/introduction).
+
+## PODs in Zupass
+
+PODs are the basis of new Zupass-enabled apps using the [ZApp SDK](/z-api/introduction).  PODs and GPCs are integrated into Zupass via PCD packages.  Newly-issued Zupass tickets use `PODTicketPCD`, while `PODPCD` can represent any other data such as collectible frogs.  `GPCPCD` enables the creation of arbitrary proofs.
