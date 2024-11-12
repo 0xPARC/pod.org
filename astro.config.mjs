@@ -57,6 +57,7 @@ export default defineConfig({
 						{ label: 'Getting Started', slug: 'z-api/getting-started' },
 						{ label: 'Queries', slug: 'z-api/queries' },
 						{ label: 'Ticket Proofs', slug: 'z-api/ticket-proofs' },
+						{ label: 'Examples', slug: 'z-api/examples' }
 					]
 				},
 				{

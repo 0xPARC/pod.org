@@ -14,13 +14,31 @@ hero:
       pod.org
     </span>
   tagline: Open source libraries for provable data and programmable cryptography
-
 ---
-### Portable Object Datatype (POD) is a standard for cryptographic data
+
+Here you'll find developer resources for programming with [PODs](/pod/introduction), [GPCs](/gpc/introduction), and [ZApps](/z-api/introduction).  Read on for an introduction, then check out the [documentation](/docs).
+
+### What is POD?
+
+Provable Object Datatype (**POD**) is a standard for cryptographic data.
 
 POD enables internet users to store data that preserve its integrity. This leads to a more interoperable and privacy preserving Internet: users can save their data and send it to other consumers, which can then verify that the data has not been modified. Cryptographic operations can be efficiently computed to redact, transform, and aggregate the content of one or more PODs while maintaining end-to-end verifiability.
 
-POD is built and supported by [0xPARC](https://0xparc.org), and used by projects like [Zupass](https://zupass.org), [PODBox](https://podbox.dev), [Devcon](https://devcon.org), [Meerkat](https://meerkat.events), and more.
+POD libraries enable any app to create zero-knowledge proofs of cryptographic data. Using POD, developers can create ZK-enabled apps without the effort and risk of developing custom cryptography. ZK proofs about PODs use General Purpose Circuits (**GPC**) which can prove many different things about PODs without revealing all details. GPCs use human-readable configuration and pre-compiled circuits so no knowledge of circuit programming is required.
+
+What [Zupass](https://zupass.org) has enabled with event tickets, PODs enable for all sorts of user data in all sorts of apps.  A POD could be your proof of attending an event, a secure message, a collectible badge, or an item in a role-playing game. PODs and GPCs can be used in Zupass, or in your own apps without Zupass.
+
+POD is built and supported by [0xPARC](https://0xparc.org), and used by projects like [Zupass](https://zupass.org), [PODBox](https://podbox.dev), [Meerkat](https://meerkat.events/), [Devcon Passport](https://app.devcon.org/), and more.
+
+
+### What's is a ZApp?
+The Z-API brings the power of [programmable cryptography](https://0xparc.org/blog/programmable-cryptography-1) to your web app, allowing you to create provable data and zero-knowledge proofs in as few as 10 lines of code. Powered by Zupass, this unlocks new options for privacy, user control of data, and interoperability.
+
+[Zupass](https://zupass.org) provides users with a private data store and a suite of cryptographic tools to make zero-knowledge proofs about that data. Zapps are apps which integrate with Zupass to provide those features to their users.
+
+A Zapp might use data from the user's Zupass store to authenticate them, or might store new data in Zupass. Because the data store is owned by the user, that data is available to any other applications the user choose to share it with.
+
+Zapps are just regular web applications, and they can also read and write data from other remote sources, such as back-end services or platforms. Your Zapp does not have to use Zupass as its only, or primary, data store. However, you _can_ build Zapps which work only with data stored in Zupass if you want to.
 
 ### Why POD?
 
@@ -44,3 +62,7 @@ This means that services issuing PODs do not need to predict ahead of time all u
 With PODs, it becomes possible to take data from different sources — paystubs, government identities, ticketing systems — and prove to third-party Internet services that a subset of this data is correct, optionally with some logic applied to it. This primitive enables just enough information to be handed to a data consumer.
 
 As an example, a loan provider can verify a proof of income via a cryptographic proof on a PODified paystub. Most of the paystub data can be redacted, and the total salary can be shown to be above a specific threshold without revealing the actual amount.
+
+### Want to learn more?
+
+Check out the [developer documentation](/docs).
