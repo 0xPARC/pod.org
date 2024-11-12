@@ -14,3 +14,12 @@ Zapps are just regular web applications, and they can also read and write data f
 
 # Why Zapps?
 
+Zero-knowledge proofs offer powerful new ways to build applications, limiting the need for centralized APIs and promoting privacy and security. By using cryptographic signatures to authenticate data, we avoid relying on API responses as single sources of truth. Instead, users can both create and receive signed data, and choose to share proofs about that data with others.
+
+Zapps are applications built with this architecture in mind. By using the [POD](../pod/introduction) data format and [general-purpose zero-knowledge circuits](../gpc/introduction), they can support these new workflows.
+
+Traditionally, building apps that use zero-knowledge proofs has been hard, requiring knowledge of ZK circuits programming, and creation of new ZK-friendly data formats. [POD](../pod/introduction) and [GPC](../gpc/introduction) together provide a toolkit for solving these problems. The Z API provides an integration with [Zupass](https://zupass.org), which gives your app a pre-built POD store with end-to-end encrypted synchronization for privacy and portability, as well as management of cryptographic keys and identity.
+
+# Z API
+
+The Z API allows you to embed Zupass in your application, making it easy to get started with PODs and GPCs, using the user's existing Zupass identity and cryptographic keys. Crucially, this allows your Zapp to access data created by other Zapps. Providing just a handful of simple API methods, we can enable the creation, storage, and management of PODs, and the creation of GPC proofs about them.
