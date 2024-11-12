@@ -8,6 +8,7 @@ export default defineConfig({
 	server: {
     port: 4374
   },
+	site: 'https://pod.org',
 	integrations: [
 		starlight({
       title: "pod.org",
