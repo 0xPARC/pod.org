@@ -6,3 +6,13 @@
 Add additional Tailwind styles to this file, for example with @layer:
 https://tailwindcss.com/docs/adding-custom-styles#using-css-and-layer
 */
+
+@media (min-width: 50rem) {
+  .hero {
+    padding-bottom: 1rem;
+  }
+
+  .hero .copy > * {
+    max-width: 100ch;
+  }
+}
