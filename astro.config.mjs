@@ -22,10 +22,8 @@ export default defineConfig({
         SiteTitle: "./src/components/starlight/SiteTitle.astro"
       },
 			sidebar: [
-				{
-					label: 'Home',
-					slug: 'docs',
-				},
+				{ label: 'Home', slug: 'docs' },
+				{ label: 'Learning', slug: 'learning' },
 				{
 					label: 'POD',
 					items: [
@@ -61,10 +59,6 @@ export default defineConfig({
 						{ label: 'Ticket Proofs', slug: 'z-api/ticket-proofs' },
 						{ label: 'Examples', slug: 'z-api/examples' }
 					]
-				},
-				{
-					label: 'POD extensions',
-					autogenerate: { directory: 'pod-extensions' },
 				}
 			],
 			customCss: ['./src/tailwind.css'],
