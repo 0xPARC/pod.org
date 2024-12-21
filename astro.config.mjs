@@ -22,17 +22,15 @@ export default defineConfig({
         SiteTitle: "./src/components/starlight/SiteTitle.astro"
       },
 			sidebar: [
-				{
-					label: 'Home',
-					slug: 'docs',
-				},
+				{ label: 'Home', slug: 'docs' },
+				{ label: 'Learning', slug: 'learning' },
 				{
 					label: 'POD',
 					items: [
 						{ label: 'Introduction', slug: 'pod/introduction' },
 						{ label: 'Getting Started', slug: 'pod/getting-started' },
-						{ label: 'POD Names and Schemas', slug: 'pod/names' },
-						{ label: 'POD Values and Types', slug: 'pod/values' },
+						{ label: 'Names and Schemas', slug: 'pod/names' },
+						{ label: 'Values and Types', slug: 'pod/values' },
 						{ label: 'Examples', slug: 'pod/examples' },
 						{ label: 'Developer Resources', slug: 'pod/resources' },
 						{ label: 'Disclaimers', slug: 'pod/disclaimers' },
@@ -61,10 +59,6 @@ export default defineConfig({
 						{ label: 'Ticket Proofs', slug: 'z-api/ticket-proofs' },
 						{ label: 'Examples', slug: 'z-api/examples' }
 					]
-				},
-				{
-					label: 'POD extensions',
-					autogenerate: { directory: 'pod-extensions' },
 				}
 			],
 			customCss: ['./src/tailwind.css'],

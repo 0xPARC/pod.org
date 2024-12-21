@@ -21,6 +21,28 @@ Links: [NPM](https://www.npmjs.com/package/@pcd/pod-pcd), [tutorial](https://git
 
 Allows PODs to be issued by Podbox, stored in Zupass, and requested and manipulated in all the ways enabled by the PCD framework.  A PODPCD can be displayed in Zupass with a user-friendly image and description, or as raw POD entries.
 
+## Ports to other languages
+
+While the only fully-supported SDK for PODs is currently in TypeScript, the POD technology is portable (defined by math).  Its implementation has been ported to other languages to support other projects during POD development.  Note that these are not complete SDKs, but are cryptographically sound examples of cross-language compatibility.
+
+### Rust (PARCNET)
+
+POD implementation in Rust for POD2 development.  Note that this implementation does not (yet) support the terse JSON format used by the TypeScript libraries.
+
+- [Source code](https://github.com/0xPARC/parcnet/tree/main/parcnet-pod/src/pod)
+
+### Python (miniPOD)
+
+Minimal Python code to sign a POD and send it to Zupass using a URL link.
+
+- [Source code](https://github.com/antimatter15/minimal-eddsa-pod-pcd-python/blob/main/minimal-pod-pcd-zupass.ipynb)
+
+### Embedded C (microPOD)
+
+Based on the Python implementation above, this project signed and issued a POD from an embedded hardware device (Cyberduck).  This was a precursor to the Cyberfrogs seen at Devcon 7 SEA in 2024.  (Note that the final released Cyberfrogs do not sign PODs, but instea sign a nonce which the server verifies before issuing a POD.)
+
+- [Source code](https://github.com/antimatter15/microPOD/blob/main/DuckV4/DuckV4.ino#L328)
+
 ## Related APIs
 
 - Proofs about PODs can be made using [GPCs](/gpc/introduction)
