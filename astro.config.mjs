@@ -29,8 +29,8 @@ export default defineConfig({
 					items: [
 						{ label: 'Introduction', slug: 'pod/introduction' },
 						{ label: 'Getting Started', slug: 'pod/getting-started' },
-						{ label: 'POD Names and Schemas', slug: 'pod/names' },
-						{ label: 'POD Values and Types', slug: 'pod/values' },
+						{ label: 'Names and Schemas', slug: 'pod/names' },
+						{ label: 'Values and Types', slug: 'pod/values' },
 						{ label: 'Examples', slug: 'pod/examples' },
 						{ label: 'Developer Resources', slug: 'pod/resources' },
 						{ label: 'Disclaimers', slug: 'pod/disclaimers' },
