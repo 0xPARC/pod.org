@@ -3,6 +3,8 @@ title: Developer Resources
 description: Where to find more info
 ---
 
+import { Aside } from '@astrojs/starlight/components';
+
 The POD and GPC libraries are available for JavaScript/TypeScript developers.  Start by looking at the [tutorial code here](https://github.com/proofcarryingdata/zupass/tree/main/examples/pod-gpc-example), then you can take a look at the specific packages listed below.
 
 All code is open-source and available in the Zupass [repo](https://github.com/proofcarryingdata/zupass).  Detailed documentation is at [docs.pcd.team](https://docs.pcd.team/).  We hope you'll give them a try and [tell us](mailto:support@zupass.org) what you think.
@@ -23,11 +25,23 @@ Allows PODs to be issued by Podbox, stored in Zupass, and requested and manipula
 
 ## Ports to other languages
 
-While the only fully-supported SDK for PODs is currently in TypeScript, the POD technology is portable (defined by math).  Its implementation has been ported to other languages to support other projects during POD development.  Note that these are not complete SDKs, but are cryptographically sound examples of cross-language compatibility.
+While the only fully-supported SDK for PODs is currently in TypeScript, the POD technology is portable (defined by math).  Its implementation has been ported to other languages to support various projects during POD development.
+
+<Aside type="caution" title="Compatibility Notes">
+Note that these are not complete SDKs and not actively supported, but should be taken as cryptographically sound examples of cross-language compatibility.  All the examples here use the same cryptographic definition of PODs, and are compatible at that level.  Compatibility of JSON encoding is variable.
+
+The Go implementation is the only one which is up to date on the latest JSON format for sending PODs.  The others use a pre-alpha incompatible format and will not accept newer PODs from the TypeScript library.  Zupass can parse this older format if it is encoded in a POD PCD, but the `@pcd/pod` library cannot.
+</Aside>
+
+### Go (PARCNET)
+
+POD implementation in Go.  This implementation is up to date with the latest JSON format, and thus fully compatible with TypeScript.
+
+- [Source code](https://github.com/0xPARC/parcnet/tree/main/go/pod)
 
 ### Rust (PARCNET)
 
-POD implementation in Rust for POD2 development.  Note that this implementation does not (yet) support the terse JSON format used by the TypeScript libraries.
+POD implementation in Rust used in next-gen POD (POD2) development.
 
 - [Source code](https://github.com/0xPARC/parcnet/tree/main/parcnet-pod/src/pod)
 

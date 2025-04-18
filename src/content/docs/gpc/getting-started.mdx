@@ -68,7 +68,7 @@ See the [Circuit Artifacts](/gpc/artifacts) page for full details about how to m
 
 ## Proof Configuration
 
-To make a proof, you first have to say what you want to prove.  A `GPCProofConfiguration` specifies the POD entries you want to prove, and the constraints you want to apply to them.  The [Proof Configuration](/gpc/proof-configuration) page has full details, but let's start with a simple configuration.  This will prove that the ID POD has a birthdate earlier than Nov 11 2003, and reveal the holder's name.
+To make a proof, you first have to say what you want to prove.  A `GPCProofConfiguration` specifies the POD entries you want to prove, and the constraints you want to apply to them.  The [Proof Configuration](/gpc/proof-configuration) page has full details, but let's start with a simple configuration.  This will prove that the ID POD has a birthdate earlier than Nov 11 2003 (represented as a UNIX timestamp), and reveal the holder's name.
 
 ```ts wrap=true title="gpc.ts"
 const proofConfig: GPCProofConfig = {
@@ -87,7 +87,7 @@ const proofConfig: GPCProofConfig = {
 ```
 
 <Aside type="note" title="Ownership">
-Note that this configuration proves that the POD is properly signed, but doesn't perform an ownership check to see that the prover has the privat key corresponding to the public key in the `cardholder` entry.  To add that extra safety check, check out the [Identity and Ownership](/pod/identity-ownership) page.
+Note that this configuration proves that the POD is properly signed, but doesn't perform an ownership check to see that the prover has the private key corresponding to the public key in the `cardholder` entry.  To add that extra safety check, check out the [Identity and Ownership](/pod/identity-ownership) page.
 </Aside>
 
 ## Make a proof
@@ -109,7 +109,7 @@ With all the preparation in place you can format the inputs to make your first Z
 
 The result of proving includes 3 types of data:
 
-- `proof` is the cryptrographic proof of correctness.  These are opaque numbers which can be used to verify the correctness of the rest.
+- `proof` is the cryptographic proof of correctness.  These are opaque numbers which can be used to verify the correctness of the other fields here.
 - `boundConfig` is the same as the configuration you passed in, except it now contains the identifier of the specific circuit which was auto-selected for the proof.
 - `revealedClaims` contains the information revealed in this proof.  In this case, it includes the `name` entry, as well as the public key of the ID card's signer.
 
@@ -158,8 +158,9 @@ To avoid being fooled by cheating provers, should check:
 - The signer's public key is the one you expect.  Trusted issuers, such as Zupass should publish their public keys.
 - The configuration reflects what you wanted to prove.
 
-Finally you should remember to examine the revealed entries.  In this case the user's name was revealed, so it could be used to record their admittance to an event.
+Finally you should remember to examine the revealed entries.  In this case the user's name was revealed, so it could be checked against the guest list for an event.
 
+{/* TODO: Move some of this detail into the verification page. */}
 <Aside type="note" title="Checking Requested Configuration">
 If the prover can use any configuration, it's can be hard to know if they're proving the right thing.  It could require examining each entry in the config one by one.  See the [Verification](/gpc/verification) page for a full discussion.
 

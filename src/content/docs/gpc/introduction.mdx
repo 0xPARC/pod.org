@@ -5,13 +5,13 @@ description: What is a GPC?
 
 General Purpose Circuits (**GPC**) are a part of the POD standard for cryptographic data.  GPC is system for easily and flexibly generating zero-knowledge proofs about [POD](/pod/introduction) data.
 
-GPC libraries enable any app to create zero-knowledge proofs of cryptographic data. Using GPCs, developers can create ZK-enabled apps without the effort and risk of developing custom cryptography. General Purpose Circuitscan prove many different things about PODs without revealing all details. GPCs use human-readable configuration and pre-compiled circuits so no knowledge of circuit programming is required.
+GPC libraries enable any app to create zero-knowledge proofs of cryptographic data. Using GPCs, developers can create ZK-enabled apps without the effort and risk of developing custom cryptography. General Purpose Circuits can prove many different things about PODs without revealing all details. GPCs use human-readable configuration and pre-compiled circuits so that no knowledge of circuit programming is required.
 
 GPC is built and supported by [0xPARC](https://0xparc.org), and used by projects like [Zupass](https://zupass.org), [PODBox](https://podbox.dev), [Meerkat](https://meerkat.events/), [Devcon Passport](https://app.devcon.org/), and more.
 
 ## What is a GPC?
 
-GPCs allow ZK proofs to be created from a simple proof configuration.  You can configure your proofs using a human-readable JSON format (or equivalent TypeScript code), which is used to generate the specific circuit inputs needed for the proof.
+GPCs allow ZK proofs to be created from a simple proof [configuration](/gpc/proof-configuration).  You can configure your proofs using a human-readable JSON format (or equivalent TypeScript code), which is used to generate the specific circuit inputs needed for the proof.
 
 ```ts
 const weaponProofConfig: GPCProofConfig = {
@@ -30,13 +30,13 @@ const weaponProofConfig: GPCProofConfig = {
 };
 ```
 
-GPCs can prove properties of one POD or several PODs together.  PODs can be proven to be owned by the prover, using their Semaphore identity.  A GPC can constrain as many named entries as needed, whether revealed or not.  For example, a proof might constrain two entries to be equal, constrain a third entry to be in a list of valid values, and reveal the value of a fourth entry.
+GPCs can prove properties of one POD or several PODs together.  PODs can be proven to be [owned](/gpc/identity-ownership) by the prover, using their Semaphore identity.  A GPC can constrain as many named entries as needed, whether revealed or not.  For example, a proof might constrain two entries to be equal, constrain a third entry to be in a list of valid values, and reveal the value of a fourth entry.
 
 ## Circuit family
 
 The GPC library inclues a family of pre-compiled ZK circuits with different sizes and capabilities.  It will automatically select the right circuit to satisfy the needs of each proof at run-time.  No setup is required, and you don't need any knowledge of circuit programming (circom, halo2, noir, etc).
 
-Using circuits in this family to prove and verify requires downloading binary artifacts: proving keys, verification keys, and witness generators.  The GPC library will automatically fetch the artifacts it needs from a download URL or local filesystem, based on your app's configuration.
+Using circuits in this family to prove and verify requires downloading binary [artifacts](/gpc/artifacts): proving keys, verification keys, and witness generators.  The GPC library will automatically fetch the artifacts it needs from a download URL or local filesystem, based on your app's configuration.
 
 ## GPCs in Zupass
 
