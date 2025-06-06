@@ -7,7 +7,7 @@ import { PackageManagers } from "starlight-package-managers";
 import { Aside } from '@astrojs/starlight/components';
 
 The `@pcd/pod` package allows you to sign, verify, and manipulate data in the POD format.  This guide will walk you through how to get started with POD development. The examples below assuming you're using TypeScript, but the same steps will work from JavaScript as well.
-
+ 
 You can find full information about the types and functions used here in the [API Reference](https://docs.pcd.team/modules/_pcd_pod.html).  If you prefer to read complete working code, check out the [tutorial example](https://github.com/proofcarryingdata/zupass/blob/main/examples/pod-gpc-example/src/podExample.ts).
 
 ## Installation
@@ -22,11 +22,9 @@ To get started with PODs, you will need to install the `@pcd/pod` package, using
 
 The package is available in CJS or ESM format, and will work either in browser or in a server. The example code makes use of bigint literals, so requries a target of at least ES2020.
 
-Packaging for a browser requires polyfill for some Node modules, including `buffer`, so watch for that if you see any dependency issues.
-
 ## Imports
 
-Next, import the types and functions you need from the package.  See the [API Reference](https://docs.pcd.team/modules/_pcd_pod.html) for everything which is available, and import what you need as you write your code.  Here's an example covering the first few samples below:
+Next, import the types and functions you need from the package.  See the [API Reference](https://docs.pcd.team/modules/_pcd_pod.html) for everything which is available, and import what you need as you write your code.  Here's an example import covering the first few samples below:
 
 ```ts wrap=true title="pod.ts"
 import { POD, PODEntries } from "@pcd/pod";
@@ -34,7 +32,7 @@ import { POD, PODEntries } from "@pcd/pod";
 
 ## POD Entries
 
-A POD is made up of entries (the [PODEntries](https://docs.pcd.team/types/_pcd_pod.PODEntries.html) type), each containing a name ([PODName](https://docs.pcd.team/types/_pcd_pod.PODName.html)) and a value ([PODValue](https://docs.pcd.team/types/_pcd_pod.PODValue.html)).You can read more details and recommendations about POD [names](names) and [values](values) later in this guide.
+A [POD](https://docs.pcd.team/classes/_pcd_pod.POD.html) is made up of entries (the [PODEntries](https://docs.pcd.team/types/_pcd_pod.PODEntries.html) type), each containing a name ([PODName](https://docs.pcd.team/types/_pcd_pod.PODName.html)) and a value ([PODValue](https://docs.pcd.team/types/_pcd_pod.PODValue.html)).You can read more details and recommendations about POD [names](names) and [values](values) later in this guide.
 
 
 In TypeScript code, all values have an explicit type specifier. Let's declare some sample entries, modeling a digital driver's license.  
@@ -66,7 +64,7 @@ const myEntries: PODEntries = {
 ```
 
 <Aside type="note" title="Semaphore Identities">
-Semaphore identities are how GPCs determine ownership of PODs. In a real app the `cardholder` value above be the owner's public key, which is part of their Semaphore identity. You might obtain from Zupass using the [Z API](/z-api/introduction), or create a new identity using the [Semaphore libary](https://www.npmjs.com/package/@semaphore-protocol/identity).
+GPCs use the Semaphore protocol to determine ownership of PODs. In Semaphore V4, identities are EdDSA signing keys, which is the same type of key which issuers use to sign PODs (see below).  The `cardholder` value above is the owner's public key. You might obtain a user's public key from Zupass using the [Z API](/z-api/introduction), create a new identity using the [Semaphore libary](https://www.npmjs.com/package/@semaphore-protocol/identity), or simply generate a keypair using the [eddsa-poseidon](https://www.npmjs.com/package/@zk-kit/eddsa-poseidon) library.
 </Aside>
 
 ## Sign a POD
@@ -89,7 +87,6 @@ You can access the `signature` and `signerPublicKey` fields to see the results.
 
 Once a POD is Merklized and signed, it is immutable.  The root of the Merkle tree is available in the `contentID` field which uniquely identifies the (unsigned) contents of this POD. The content ID is like a hash (actually the root of a Merkle tree) in that the same entries will always result in the same content ID.
 
-
 ## Verify a Signature
 
 If you receive a POD from an untrusted source, it's always a good idea to verify the signature. An invalid signature will make it impossible
@@ -103,10 +100,9 @@ to generate ZK proofs of the POD.
 
 ## POD Contents
 
-Inside a POD is a PODContent object which acts as a Map-like object for accessing the POD's entries. The PODContent class also forms the Merkle tree in which the entries are cryptographically arranged to calculate the content ID.
+Inside a POD is a [PODContent](https://docs.pcd.team/classes/_pcd_pod.PODContent.html) object which acts as a Map-like object for accessing the POD's entries. The PODContent class also forms the Merkle tree in which the entries are cryptographically arranged to calculate the content ID.
 
-Merklization happens lazily on-demand, with the result cached to avoid duplicated effort. The PODContent class can also generate Merkle membership proofs for individual entries, which are needed for GPC
-proving.
+Merklization happens lazily on-demand, with the result cached to avoid duplicated effort. The PODContent class can also generate Merkle membership proofs for individual entries.  These are needed for GPC proving, though most apps won't need to make use of them directly.
 
 ```ts wrap=true title="pod.ts"
   const postcode = myPOD.content.getValue("postcode");
@@ -115,10 +111,9 @@ proving.
 
 ## JSON Serialization
 
-PODs, and related types like entries are not directly stringifiable due to the use of bigints, and class objects. There are supported
-conversion functions for all types to/from JSON compatible types which can be used for serialization via `JSON.stringify`.
+PODs, and related types like entries are not directly stringifiable due to the use of bigints, and class objects. There are conversion functions for all types to/from JSON compatible types which can be used for serialization via `JSON.stringify`.
 
-You can find TypeScript types with the `JSON` prefix added to the primary type: e.g. `POD` to `JSONPOD`, `PODValue` to `JSONPODValue`, etc. The conversion functions also validate that all the data is legal and well-formed.
+You can find TypeScript types with the `JSON` prefix added to the primary type: e.g. POD to [JSONPOD](https://docs.pcd.team/types/_pcd_pod.JSONPOD.html), PODValue to [JSONPODValue](https://docs.pcd.team/types/_pcd_pod.JSONPODValue.html), etc. The conversion functions like [podValueToJSON](https://docs.pcd.team/functions/_pcd_pod.podValueToJSON.html) also validate that all the data is legal and well-formed.
 
 ```ts wrap=true title="pod.ts"
   const jsonPOD: JSONPOD = myPOD.toJSON();
@@ -151,7 +146,7 @@ The JSON format is optimized to be human-readable as well as short.  It omits ty
 }
 ```
 
-Deserialization can be performed by performing the reverse conversion after calling `JSON.parse`. This conversion also fully validates the input and will throw if the data is malformed.
+Deserialization can be performed by performing the reverse conversion after calling `JSON.parse`. The conversion functions like [podValueFromJSON](https://docs.pcd.team/functions/_pcd_pod.podValueFromJSON.html) also fully validate the input and will throw if the data is malformed.
 
 ```ts wrap=true title="pod.ts"
   const receivedPOD: POD = POD.fromJSON(JSON.parse(serializedPOD));
@@ -163,6 +158,7 @@ Deserialization can be performed by performing the reverse conversion after call
 ## What's next?
 
 - Check out the rest of the pages of this guide for deeper dives on various aspects of PODs.
+- See the [API Reference](https://docs.pcd.team/modules/_pcd_pod.html) for more details on the types and functions of the POD library.
 - Check the [Developer Resources](resources) for references to related packages.
 - Read about how [GPCs](/gpc/introduction) make ZK proofs about PODs easy, or about how the [Z-API](/z-api/introduction) lets you access PODs and request proofs from Zupass.
 - Read or watch more about PODs in both vision and technical detail on the [Learning](/learning) page.  In particular, check out the [intro and deep dive talks](/learning#pod-and-gpc) for more about how PODs and GPCs work.

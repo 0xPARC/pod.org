@@ -5,29 +5,31 @@ description: Where to find more info
 
 The POD and GPC libraries are available for JavaScript/TypeScript developers.  Start by looking at the [tutorial code here](https://github.com/proofcarryingdata/zupass/tree/main/examples/pod-gpc-example), then you can take a look at the specific packages listed below.
 
-All code is open-source and available in the Zupass [repo](https://github.com/proofcarryingdata/zupass).  Detailed documentation is at [docs.pcd.team](https://docs.pcd.team/).  We hope you'll give them a try and [tell us](mailto:support@zupass.org) what you think.
+All code is open-source and available in the Zupass [repo](https://github.com/proofcarryingdata/zupass).  Detailed API reference documentation is at [docs.pcd.team](https://docs.pcd.team/modules/_pcd_gpc.html).
+
+For questions or to talk with other developers, you can join our Telegram group at [t.me/zupass](https://t.me/zupass).
 
 ### @pcd/gpc
 
-Links: [NPM](https://www.npmjs.com/package/@pcd/gpc), [tutorial](https://github.com/proofcarryingdata/zupass/blob/main/examples/pod-gpc-example/src/gpcExample.ts#L88), [docs](https://docs.pcd.team/modules/_pcd_gpc.html), [code](https://github.com/proofcarryingdata/zupass/tree/main/packages/lib/gpc)
+Links: [NPM](https://www.npmjs.com/package/@pcd/gpc), [tutorial](https://github.com/proofcarryingdata/zupass/blob/main/examples/pod-gpc-example/src/gpcExample.ts#L88), [API reference](https://docs.pcd.team/modules/_pcd_gpc.html), [code](https://github.com/proofcarryingdata/zupass/tree/main/packages/lib/gpc)
 
 Allows creation of GPC proofs using high-level configuration.  The config compiler picks the right ZK circuit, and generates the circuit inputs to prove or verify as needed.
 
 ### @pcd/proto-pod-pcd-artifacts
 
-Links: [NPM](https://www.npmjs.com/package/@pcd/proto-pod-gpc-artifacts), [tutorial](https://github.com/proofcarryingdata/zupass/blob/main/examples/pod-gpc-example/src/gpcExample.ts#L155), [docs](https://github.com/proofcarryingdata/snark-artifacts/blob/pre-release/README.md), [code](https://github.com/proofcarryingdata/snark-artifacts/tree/pre-release/packages/proto-pod-gpc)
+Links: [NPM](https://www.npmjs.com/package/@pcd/proto-pod-gpc-artifacts), [tutorial](https://github.com/proofcarryingdata/zupass/blob/main/examples/pod-gpc-example/src/gpcExample.ts#L155), [API reference](https://github.com/proofcarryingdata/snark-artifacts/blob/pre-release/README.md), [code](https://github.com/proofcarryingdata/snark-artifacts/tree/pre-release/packages/proto-pod-gpc)
 
-This package contains the binary artifacts (proving and verification keys, witness generators) needed for GPC proofs in the initial `proto-pod-gpc` family.  These are large, but you'll only need a few of them, not the whole package.  Read more information about how to use tehse artifacts [here](/gpc/artifacts).
+This package contains the binary artifacts (proving and verification keys, witness generators) needed for GPC proofs in the default `proto-pod-gpc` family.  These are large, but you'll only need a few of them, not the whole package.  Read more information about how to use tehse artifacts [here](/gpc/artifacts).
 
 ### @pcd/gpcircuits
 
-Links: [NPM](https://www.npmjs.com/package/@pcd/gpcircuits), [docs](https://docs.pcd.team/modules/_pcd_gpcircuits.html), [code](https://github.com/proofcarryingdata/zupass/tree/main/packages/lib/gpcircuits/circuits)
+Links: [NPM](https://www.npmjs.com/package/@pcd/gpcircuits), [API reference](https://docs.pcd.team/modules/_pcd_gpcircuits.html), [code](https://github.com/proofcarryingdata/zupass/tree/main/packages/lib/gpcircuits/circuits)
 
-Contains the modular ZK circuits used to generate GPC proofs.  You don't need to look at this code to use GPCs, but you can use this code as the basis of your own ZK circuits using PODs, or to enable on-chain verifiaction.
+Contains the modular ZK circuits used to generate GPC proofs, and TypeScript helpers for using those circuits.  You don't need to look at this code to use GPCs, but you can use this code as the basis of your own ZK circuits using PODs, or to enable on-chain verification.
 
 ### @pcd/gpc-pcd
 
-Links: [NPM](https://www.npmjs.com/package/@pcd/gpc-pcd), [tutorial](https://github.com/proofcarryingdata/zupass/blob/main/examples/pod-gpc-example/src/gpcExample.ts#L376), [docs](https://docs.pcd.team/modules/_pcd_gpc_pcd.html), [code](https://github.com/proofcarryingdata/zupass/tree/main/packages/pcd/gpc-pcd)
+Links: [NPM](https://www.npmjs.com/package/@pcd/gpc-pcd), [tutorial](https://github.com/proofcarryingdata/zupass/blob/main/examples/pod-gpc-example/src/gpcExample.ts#L376), [API reference](https://docs.pcd.team/modules/_pcd_gpc_pcd.html), [code](https://github.com/proofcarryingdata/zupass/tree/main/packages/pcd/gpc-pcd)
 
 Allows GPC proofs to be generated about PODs in your Zupass.  A GPCPCD is developer/hacker friendly, displaying the proof configuration and POD values directly.  Most apps don't need to interact directly with GPCPCDs, but should instead prefer to use the [Z API](/z-api/introduction).
 

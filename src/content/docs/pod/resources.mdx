@@ -7,19 +7,21 @@ import { Aside } from '@astrojs/starlight/components';
 
 The POD and GPC libraries are available for JavaScript/TypeScript developers.  Start by looking at the [tutorial code here](https://github.com/proofcarryingdata/zupass/tree/main/examples/pod-gpc-example), then you can take a look at the specific packages listed below.
 
-All code is open-source and available in the Zupass [repo](https://github.com/proofcarryingdata/zupass).  Detailed documentation is at [docs.pcd.team](https://docs.pcd.team/).  We hope you'll give them a try and [tell us](mailto:support@zupass.org) what you think.
+All code is open-source and available in the Zupass [repo](https://github.com/proofcarryingdata/zupass).  Detailed API reference documentation is at [docs.pcd.team](https://docs.pcd.team/modules/_pcd_pod.html).
+
+For questions or to talk with other developers, you can join our Telegram group at [t.me/zupass](https://t.me/zupass).
 
 ## POD Packages
 
 ### @pcd/pod
 
-Links: [NPM](https://www.npmjs.com/package/@pcd/pod), [tutorial](https://github.com/proofcarryingdata/zupass/blob/main/examples/pod-gpc-example/src/podExample.ts), [docs](https://docs.pcd.team/modules/_pcd_pod.html), [code](https://github.com/proofcarryingdata/zupass/tree/main/packages/lib/pod)
+Links: [NPM](https://www.npmjs.com/package/@pcd/pod), [tutorial](https://github.com/proofcarryingdata/zupass/blob/main/examples/pod-gpc-example/src/podExample.ts), [API reference](https://docs.pcd.team/modules/_pcd_pod.html), [code](https://github.com/proofcarryingdata/zupass/tree/main/packages/lib/pod)
 
-Allows creation and signing of PODs, and manipulation of their keys and values.
+Allows creation and signing of PODs, and manipulation of their named values.
 
 ### @pcd/pod-pcd
 
-Links: [NPM](https://www.npmjs.com/package/@pcd/pod-pcd), [tutorial](https://github.com/proofcarryingdata/zupass/blob/main/examples/pod-gpc-example/src/podExample.ts#L214), [docs](https://docs.pcd.team/modules/_pcd_pod_pcd.html), [code](https://github.com/proofcarryingdata/zupass/tree/main/packages/pcd/pod-pcd)
+Links: [NPM](https://www.npmjs.com/package/@pcd/pod-pcd), [tutorial](https://github.com/proofcarryingdata/zupass/blob/main/examples/pod-gpc-example/src/podExample.ts#L214), [API reference](https://docs.pcd.team/modules/_pcd_pod_pcd.html), [code](https://github.com/proofcarryingdata/zupass/tree/main/packages/pcd/pod-pcd)
 
 Allows PODs to be issued by Podbox, stored in Zupass, and requested and manipulated in all the ways enabled by the PCD framework.  A PODPCD can be displayed in Zupass with a user-friendly image and description, or as raw POD entries.
 
@@ -28,7 +30,7 @@ Allows PODs to be issued by Podbox, stored in Zupass, and requested and manipula
 While the only fully-supported SDK for PODs is currently in TypeScript, the POD technology is portable (defined by math).  Its implementation has been ported to other languages to support various projects during POD development.
 
 <Aside type="caution" title="Compatibility Notes">
-Note that these are not complete SDKs and not actively supported, but should be taken as cryptographically sound examples of cross-language compatibility.  All the examples here use the same cryptographic definition of PODs, and are compatible at that level.  Compatibility of JSON encoding is variable.
+Note that these are not complete SDKs and not actively supported, but should be taken as cryptographically sound examples of cross-language compatibility.  All the examples here use the same cryptographic definition of PODs, and are compatible at that level.  Compatibility of JSON encoding varies.
 
 The Go implementation is the only one which is up to date on the latest JSON format for sending PODs.  The others use a pre-alpha incompatible format and will not accept newer PODs from the TypeScript library.  Zupass can parse this older format if it is encoded in a POD PCD, but the `@pcd/pod` library cannot.
 </Aside>
@@ -53,7 +55,7 @@ Minimal Python code to sign a POD and send it to Zupass using a URL link.
 
 ### Embedded C (microPOD)
 
-Based on the Python implementation above, this project signed and issued a POD from an embedded hardware device (Cyberduck).  This was a precursor to the Cyberfrogs seen at Devcon 7 SEA in 2024.  (Note that the final released Cyberfrogs do not sign PODs, but instea sign a nonce which the server verifies before issuing a POD.)
+Based on the Python implementation above, this project signed and issued a POD from an embedded hardware device (Cyberduck).  This was a precursor to the Cyberfrogs seen at Devcon 7 SEA in 2024.  (Note that the final released Cyberfrogs do not sign PODs, but instead sign a nonce which the server verifies before issuing a POD.)
 
 - [Source code](https://github.com/antimatter15/microPOD/blob/main/DuckV4/DuckV4.ino#L328)
 

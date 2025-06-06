@@ -41,6 +41,7 @@ export default defineConfig({
 					items: [
 						{ label: 'Introduction', slug: 'gpc/introduction' },
 						{ label: 'Getting Started', slug: 'gpc/getting-started' },
+						{ label: 'Proving and Verifying', slug: 'gpc/proving-and-verifying'},
 						{ label: 'Proof Configuration', slug: 'gpc/proof-configuration' },
 						{ label: 'Identity and Ownership', slug: 'gpc/identity-ownership' },
 						{ label: 'Verifying Securely', slug: 'gpc/verification' },

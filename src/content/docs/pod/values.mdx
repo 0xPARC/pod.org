@@ -5,15 +5,17 @@ description: Data in a POD
 
 import { Aside } from '@astrojs/starlight/components';
 
+This page describes the value data stored in a POD, including all the types of values supported, and details on their cryptographic encoding.  See the [Names and Schemas](./names) page for information on how values are named and accessed.
+
 ## POD Content
 
-A POD is a cryptographic record made up of entries consisting of a [**name**](./names) (always a string) and a value of a supported type. Values are scalars with no nested objects, meaning the POD structure is flat.
+A POD is a cryptographic record made up of entries consisting of a [**name**](./names) (always a string) and a [value](https://docs.pcd.team/types/_pcd_pod.PODValue.html) of a supported [type](#value-types). Values are scalars with no nested objects, meaning the POD structure is flat.
 
 The full contents of a POD are uniquely identified by a **content ID**. The content ID can be thought of as a hash of the content generated in a way which is deterministic and optimized for easy ZK proving (see the [PODContent](https://docs.pcd.team/classes/_pcd_pod.PODContent.html) class for more). The content ID is signed using the issuer's private key to generate the POD's **signature** (in the [POD](https://docs.pcd.team/classes/_pcd_pod.POD.html) class).
 
-Cryptographically each entry's name and value is identfied by a hash: a [cryptographic number](#cryptographic-numbers) which uniquely and securely identifes that specific value. **Name hashes** and **value hashes** are calculated separately for each entry, then hashed together in a [Merkle Tree](https://en.wikipedia.org/wiki/Merkle_tree). The root of the tree is the aforementioned content ID.
+Cryptographically each entry's name and value is identfied by a hash: a [cryptographic number](#cryptographic-numbers) which uniquely and securely identifes that specific name or value. **Name hashes** and **value hashes** are calculated separately for each entry, then hashed together in a [Merkle Tree](https://en.wikipedia.org/wiki/Merkle_tree). The root of the tree is the aforementioned content ID.
 
-**Value types** are hints used by the library to determine how value in TypeScript is reduced to a hash This also determines how a value can be used in GPC proofs. The type itself is not part of the cryptographic identity of an entry. This means if two values have the same value hash, they are considered the same value, even if they were declared with different types. For instance `{int: 1}` and `{boolean: true}` are the same value.
+**Value types** are hints used by the library to determine how a value in TypeScript is reduced to a hash. This also determines how a value can be used in GPC proofs. The type itself is not part of the cryptographic identity of an entry. This means if two values have the same value hash, they are considered the same value, even if they were declared with different types. For instance `{int: 1}` and `{boolean: true}` are the same value.
 
 <Aside type="caution" title="Type Security">
 See the note on [type security](#type-security) below for security implications of this.
@@ -23,7 +25,7 @@ See the note on [type security](#type-security) below for security implications 
 
 Below we summarize the details of all supported value types, and how they can be used. Follow the links in column headers for more information about what they mean, or see [below](#supported-types) for info specific to each suported type.
 
-| [POD Type](#supported-types) | [TypeScript Type](#supported-types) | [Hash](#hash-functions) | [Values](#supported-types) | [Equivalency](#equivalency-categories) | [Ordered](#ordered-types) | 
+| [POD Type](#supported-types) | [TypeScript Type](#supported-types) | [Hash](#hash-functions) | [Values](#supported-types) | [Equivalency](#equivalency-categories) | [Arithmetic](#arithmetic-types) | 
 | --- | --- | --- | --- | --- | --- |
 | cryptographic | bigint | Poseidon1 | field element | number | no |
 | int | bigint | Poseidon1 | 64-bit signed | number | yes |
@@ -36,55 +38,61 @@ Below we summarize the details of all supported value types, and how they can be
 
 ### Supported Types
 
-The POD libraries in TypeScript declare types which best fit the POD value types, and perform input validation to ensure the values are in legal ranges. See the note on the note on [type security](#type-security) to be sure you're not trusting it too much.
+Values are represented in TypeScript by the [PODValue](https://docs.pcd.team/types/_pcd_pod.PODValue.html) type in TypeScript, which includes a type tag. Libraries perform input validation to ensure the values are in legal ranges. You can also call [checkPODValue](https://docs.pcd.team/functions/_pcd_pod.checkPODValue.html) to manually check a value. See the note on the note on [type security](#type-security) to be sure you're not trusting it too much.
 
 - **cryptographic** is a numeric type typically used to hold hashes or signatures. It is an unsigned number in a range [0, p-1] for a large prime p (254 bits). It is represented directly as a [**field element**](#cryptographic-numbers) supported by the elliptic curve cryptography which underlies PODs.
-- **int** is a numeric type limited to a range suitable for efficient arithmetic and comparisons in GPC circuits. ints are 64-bit signed values, in the range [-2<sup>63</sup>, 2<sup>63</sup>-1], the same range as the 2s-complement representation in most CPU platforms. 
+- **int** is a numeric type limited to a range suitable for efficient arithmetic and comparisons in GPC circuits. ints are 64-bit signed values, in the range [-2<sup>63</sup>, 2<sup>63</sup> - 1], the same range as the 2s-complement representation in most CPU platforms. 
 - **boolean** is a convenience type equivalent to an int with values 0 (false) and 1 (true).
 - **date** is a convenience type equivalent to an int holding milliseconds relative to the UNIX epoch. It is signed, so it can represent dates earlier than 1970. Its range is limited to that of the JavaScript [Date](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date#the_epoch_timestamps_and_invalid_date) type (which is approximately &pm;53 bits).
-- **string** can represent any Unicode string, which is internally encoded in UTF-8.  Strings can be compared only for equality in GPCs.
+- **string** can represent any Unicode string, encoded in UTF-8.  Strings can be compared only for equality in GPCs.
 - **bytes** can hold any array of bytes, and behave similarly to strings in GPCs.
-- **eddsa_pubkey** is a specialized type for user or signer identities using the EdDSA algorithm. In TypeScript it is represented as a Base64 representation of the packed elliptic curve point. In GPC circuits, it can be compared to POD signers, and used to prove ownership.
+- **eddsa_pubkey** is a specialized type for user or signer identities using the same EdDSA algorithm used to sign PODs. In TypeScript it is represented as a Base64 representation of a packed elliptic curve point. In GPC circuits, it can be compared to POD signers, or used to prove ownership.
 - **null** is a type with a single unique value which will not compare equal to any other value. An entry with a value of null is **not** the same as an absent entry. GPC proofs cannot prove the absence of an entry, so if the issuer sets an entry to null it can help clients to prove that no other value is present.
 
 ### Equivalency Categories
 
 The categories in the table above indicate which types can compare as equal to each other. When two POD values are compared for equality in a proof (such as with an `equalsEntry` constraint), it is their value hashes which are compared. The [hash functions](#hash-functions) described below thus determine equivalency. This can be helpful in defining proof constraints, but see [type security](#type-security) below for some cautions on how to avoid unsafe assumptions.
 
-All numeric types are equivalent if they have the same numeric value, since they are all represented as field elements. `{cryptographic: 0}`, `{int: 0}`, `{boolean: false}`, and `{date: "1970"}` are all equivalent. If your app needs to treat different types differently, you should be it is checking the appropriate requirements for your use case.
+All numeric types are equivalent if they have the same numeric value, since they are all represented as field elements. So `{cryptographic: 0}`, `{int: 0}`, `{boolean: false}`, and `{date: "1970"}` are all equivalent. If your app needs to treat different types differently, you should include extra metadata in additional POD values.
 
-Strings are quivalent to a byte array containing their UTF-8 encoding. The remaining types are not equivalent to any other types.
+Strings and byte arrays are also equivalent. A strings will compare equal to a byte array containing its UTF-8 encoding.
 
-### Ordered Types
+Note that numbers and byte-arrays are not equivalent to each other. The remaining types are not equivalent to any other types.
+
+### Arithmetic Types
 
 Arithmetic in ZK circuits is limited by the circular nature of modular arithmetic. To efficiently perform more traditional arithmetic and comparisons while avoiding overflows, POD values must be limited to a smaller range.
 
 In the current GPC libraries, only numeric values which fit within 64 bits can be subjected to ordering constraints such as `inRange` or `lessThan`. In future these are also the types which might be added or multiplied together in more customized constraints.
 
-Strings and bytes are not considered "ordered" for this purpose since they have no numeric ordering. Custom constraints on variable-length values such as strings are not currently supported in GPCs.
+Strings and bytes are not considered "ordered" for this purpose since they are not numeric types. Custom constraints on variable-length values such as strings are not currently supported in GPCs.
 
 ## Implementation Details
 
 ### Cryptographic Numbers
 
-What makes PODs ZK-friendly for proving is their choice of numeric representation, as well as algorithms for hashing and signing. These are tied to the specific proving systems used by [Circom](https://docs.circom.io/). These are tied to elliptic curve cryptography using modular arithmetic on the [Baby Jubjub prime field](https://iden3-docs.readthedocs.io/en/latest/iden3_repos/research/publications/zkproof-standards-workshop-2/baby-jubjub/baby-jubjub.html). Elements of this prime field are integers from 0 to p-1 where p is a 254-bit prime. Computers typically hold these in 256 bit values.
+What makes PODs ZK-friendly for proving is their choice of numeric representation, as well as algorithms for hashing and signing. These are tied to the specific proving systems used by [Circom](https://docs.circom.io/), which are based on elliptic curve cryptography using modular arithmetic on the [Baby Jubjub prime field](https://iden3-docs.readthedocs.io/en/latest/iden3_repos/research/publications/zkproof-standards-workshop-2/baby-jubjub/baby-jubjub.html). Elements of this prime field are integers from 0 to p-1 where p is a specific 254-bit prime number. Computers typically hold these in 256 bit values.
 
-The details of this are mostly hidden from users of the POD library, but are visible in raw **cryptographic** values representing hashes, signatures, and a POD's content ID. Programmers can generally treat these as opaque values, so long as they can handle the `bigint` type. All other numeric types are also represented internally as field elements, but the libraries handle the details of the translation.
+The details of this are mostly hidden from users of the POD library, but are visible in raw **cryptographic** values representing hashes, signatures, and a POD's content ID. Programmers can generally treat these as opaque, so long as they can handle the `bigint` type. All other numeric types are also represented internally as field elements, but the libraries handle the details of the translation.
 
 ### Hash Functions
 
-All values are identified by their hash using one of these hash functions.
+All values are identified by their hash using one of the specific hash algorithms below. You can call [podValueHash](https://docs.pcd.team/functions/_pcd_pod.podValueHash.html) to invoke the proper hash function for any PODValue.
 
-- **Poseidon**: Fixed-size values use a Poseidon hash, which is ZK-friendly and can be directly validated in a GPC circuit. In GPC proofs, these are the values which can be subjected to customized constraints on their value beyond simple equality. The Poseidon hash varies by number of inputs. Most numeric values use the single-input variant [`podIntHash`](https://docs.pcd.team/functions/_pcd_pod.podIntHash.html) function, while EdDSA public keys use the 2-input variant [`podEddsaPublicKeyHash`](https://docs.pcd.team/functions/_pcd_pod.podEdDSAPublicKeyHash.html) to cover the x and y coordinate of an elliptic curve point.
+- **Poseidon**: Fixed-size values use a Poseidon hash, which is ZK-friendly and can be directly validated in a GPC circuit. In GPC proofs, these are the values which can be subjected to customized constraints beyond equality. The Poseidon hash varies by number of inputs. Most numeric values use the single-input variant [`podIntHash`](https://docs.pcd.team/functions/_pcd_pod.podIntHash.html) function, while EdDSA public keys use the 2-input variant [`podEddsaPublicKeyHash`](https://docs.pcd.team/functions/_pcd_pod.podEdDSAPublicKeyHash.html) to cover the x and y coordinate of an elliptic curve point.
 
-- **SHA**: Variable-size values (strings and bytes) use a SHA256 hash, truncated (via right-shift) to 248 bits in order to fit in a field element (see the [`podStringHash`](https://docs.pcd.team/functions/_pcd_pod.podStringHash.html) function). The names of POD entries also use the same hash function. This hash is not efficient to perform in a ZK circuit, so comparisons in proofs are always by hash. The GPC Verifier re-hashes strings to ensure their hashes match what is in the circuit.
+- **SHA**: Variable-size values (strings and bytes) use a SHA256 hash, truncated (via right-shift) to 248 bits in order to fit in a field element (see the [`podStringHash`](https://docs.pcd.team/functions/_pcd_pod.podStringHash.html) function). This hash is not efficient to perform in a ZK circuit, so comparisons in proofs are always by hash. The GPC Verifier re-hashes strings to ensure their hashes match what is in the circuit.
 
 - **constant**: The null value has a single fixed constant as its defined hash value, with no algorithm needed.
 
+<Aside type="note" title="Name Hashes">
+The names of POD entries also use the same hash function as strings, though this could change in future POD versions. Call [`podNameHash`](https://docs.pcd.team/functions/_pcd_pod.podNameHash.html) to hash a name.
+</Aside>
+
 ### Type Security
 
-The non-cryptographic nature of value types has some security implications. The POD libraries will helpfully ensure values are in range for their types, but a buggy or malicious implementation could violate those rules. The nature of the hashes used means that values will only ever have the same hash if their original types are in the same of [equivalency category](#equivalency-categories). (For a strong hash function, the probability of collision is negligible within the cryptographic assumptions of the algorithms used.)
+The non-cryptographic nature of value types has some security implications. The POD libraries will helpfully ensure values are in range for their types, but a buggy or malicious implementation could violate those rules. The nature of the hashes used means that values will only ever have the same hash if their original types are in the same of [equivalency category](#equivalency-categories). For a strong hash function, the probability of collision between categories is negligible within the cryptographic assumptions of the algorithms used.
 
 Treating an input differently based on its type using a type switch pattern isn't reliable when operating on POD values. Avoid designing schemas which rely on mixing heterogeneous types in an entry of the same name.
 
-When checking security assumptions with PODs or GPC proofs, always make sure you're constraining an entry's value not just relying on its type. This is particularly important in proof constraints where the original value and type are not revealed.  For instance, don't assume that a `boolean` can't be equal to 100, or that an `int` can't be more than 2<sup>63</sup>. Check the value before using it for security decisions, or to index arrays which could overflow. In GPC proofs, you can use the `inRange` constraint to ensure a value lies in an expected range.
+When checking security assumptions with PODs or GPC proofs, always make sure you're constraining an entry's value not just relying on its type. This is particularly important in proof constraints where the original value and type are not revealed.  For instance, don't assume that a `boolean` can't be equal to 100, or that an `int` can't be more than 2<sup>63</sup>. Check the value before using it for security decisions, or to index arrays which might overflow. In GPC proofs, you can use the `inRange` constraint to ensure a value lies in an expected range.
