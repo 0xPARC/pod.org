@@ -46,6 +46,7 @@ export default defineConfig({
 						{ label: 'Identity and Ownership', slug: 'gpc/identity-ownership' },
 						{ label: 'Verifying Securely', slug: 'gpc/verification' },
 						{ label: 'Circuit Artifacts', slug: 'gpc/artifacts' },
+						{ label: 'On-Chain Verification', slug: 'gpc/on-chain' },
 						{ label: 'Examples', slug: 'gpc/examples' },
 						{ label: 'Developer Resources', slug: 'gpc/resources' },
 						{ label: 'Disclaimers', slug: 'gpc/disclaimers' },
