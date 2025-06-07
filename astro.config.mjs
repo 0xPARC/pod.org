@@ -41,10 +41,12 @@ export default defineConfig({
 					items: [
 						{ label: 'Introduction', slug: 'gpc/introduction' },
 						{ label: 'Getting Started', slug: 'gpc/getting-started' },
+						{ label: 'Proving and Verifying', slug: 'gpc/proving-and-verifying'},
 						{ label: 'Proof Configuration', slug: 'gpc/proof-configuration' },
 						{ label: 'Identity and Ownership', slug: 'gpc/identity-ownership' },
 						{ label: 'Verifying Securely', slug: 'gpc/verification' },
 						{ label: 'Circuit Artifacts', slug: 'gpc/artifacts' },
+						{ label: 'On-Chain Verification', slug: 'gpc/on-chain' },
 						{ label: 'Examples', slug: 'gpc/examples' },
 						{ label: 'Developer Resources', slug: 'gpc/resources' },
 						{ label: 'Disclaimers', slug: 'gpc/disclaimers' },

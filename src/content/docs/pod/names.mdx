@@ -5,14 +5,16 @@ description: Identifying the contents of a POD
 
 import { Aside } from '@astrojs/starlight/components';
 
+This page describes the structure of a POD, including the full expressibility of the POD name/value store, and suggested best practices for interoperability. See the [Values and Types](./values) page for information on the value stored in a POD.
+
+## POD Structure
+
 A POD is a cryptographic record with no enforced schema. A POD is made up of entries consisting of a [name](#legal-names) (always a string) and a [value](./values) (of a supported type). Values are scalars with no nested objects, meaning the POD structure is flat.
 
 Apps can represent their data however they like. Entry names and values are hashed and cryptographically verified in a POD. The issuer of a POD decides what the expected set of names and values should be for their use case. The definition order of entries is not important since entries area always sorted by name before hashing.
 
-- **Names**: The cryptography behind PODs will accept any name or value which can be validly hashed. The POD library enforces the [legal characters in names](#legal-names) described below.
-- **Value schemas**: There is no formal notion of a schema for POD entries, but there are some recommended best-practices apps should follow, most particularly the use of the [`pod_type`](#pod_type) and [Zupass Display](#zupass-display) entries described below.
-
-The rest of this page describes the requirements and recommendations about POD names and schemas.
+- **Names**: The cryptography behind PODs will accept any name or value which can be hashed. The POD library enforces the [legal characters in names](#legal-names) described below.
+- **Schema**: There is no formally enforced notion of a schema for POD entries, but there are some recommended best-practices apps should follow, most particularly the use of the [`pod_type`](#pod_type) and [Zupass Display](#zupass-display) entries described below.
 
 ## Legal Names
 
@@ -27,10 +29,12 @@ if (idEntries.pod_type === "zu_gov.id") {
 ```
 
 <Aside type="caution" title="Security and Future Proofing">
-While the legal characters are checked by the SDK, they are not cryptographically enforced. Custom code can sign a POD with any string in its names. Thus if your app will be consuming data in unknown formats, you shouldn't assume that a POD name won't contain special characters beyond those defined here. E.g. if a POD name comes from untrusted input, you shouldn't assume it won't contain special characters used for SQL injection.
+While the legal characters are checked by the SDK, they are not cryptographically enforced. Custom code can sign a POD with any string in its names. Thus if your app will be consuming data in unknown formats, you shouldn't assume that a POD name won't contain special characters beyond those defined here. E.g. if a POD name comes from untrusted input and needs to be written to your database, you should sanitize it against possible SQL injection attacks.
 </Aside>
 
-This limited character set is restrictive today, but may expand in future versions to support new features. This also leaves special characters to be used for special purposes outside of PODs themselves, such as in GPC proof configuration (see below).
+You can call [checkPODName](https://docs.pcd.team/functions/_pcd_pod.checkPODName.html) to manually check if a string is a valid name, but the POD libraries will also do so in normal operation.  Note that the legal character restriction applies only to names, not to values. A string value can contain any characters (UTF-8 encoded).
+
+This limited character set is restrictive today partially to allow it to expand in future versions to support new features. This also leaves special characters to be used for special purposes outside of PODs themselves, such as in GPC proof configuration (see below).
 
 ### Use of Names in GPCs
 
@@ -51,12 +55,12 @@ Apps should avoid defining their own entry names with the prefixes `pod_` or `zu
 
 ### `pod_type`
 
-The `pod_type` entry is the a recommended way for apps to tag their PODs to let their contents be understood across apps. It should be used by apps to identify the purpose or schema of their PODs using some unique identifier. In future, this might be used to index into a library of published schema identifiers.  For now, the `pod_type` is not enforced, but is helpful to avoid mixing PODs with common names. For instance, `pod.name` means something different on a driver's license than it does on a collectible frog.
+The `pod_type` entry is the a recommended way for apps to tag their PODs to let their contents be understood across apps. It should be used by apps to identify the purpose or schema of their PODs using some unique identifier. In future, this might be used to index into a library of published schema identifiers.  For now, the `pod_type` is not enforced, but is helpful to avoid mixing PODs with common names. For instance, `somePOD.name` means something different on a driver's license than it does on a collectible frog.
 
 There is no required format for `pod_type`, but it is recommended to contain the name or identifier of your app so as to be unique. [Reverse domain name notation](https://en.wikipedia.org/wiki/Reverse_domain_name_notation) is a good way to ensure that.
 
 <Aside type="caution" title="pod_type Security">
-The `pod_type` is a good way to avoid accidental misuse, but is usually only the second step in trusting the meaning of a POD. The first step should always be to check that the POD is signed, and almost always to check that its public key is a trusted signer. A known signer might be trusted to follow a schema, making `pod_type` redundant (but still recommended) for signers which issue only one type of POD. An untrusted signer could sign anything, so if your app accepts data from any signer (e.g. user-signed PODs) be sure to check its validity like any untrusted input.
+The `pod_type` is a good way to avoid accidental misuse, but is usually only the second step in trusting the meaning of a POD. The first step should always be to check that the POD's signature, and almost always to check that its public key is a trusted signer. A known signer could be trusted to follow a schema, making `pod_type` redundant (but still recommended) for signers which issue only one type of POD. An untrusted signer could sign anything, so if your app accepts data from any signer (e.g. user-signed PODs) be sure to check its format like any untrusted input.
 </Aside>
 
 ### Zupass Display
@@ -67,18 +71,16 @@ Zupass is a generic POD store able to hold any type of POD, and show the user it
   - `collectable` displays the other fields described below in a card.  Requires at least one of title, description, or image URL to be set.
   - `pod` explicitly chooses the default JSON display
 - `zupass_title` (string): a short title for your POD, used in folder listings and/or the top of the display card.
-- `zupass_description` (string): a text description of your POD
-- `zupass_image_url` (string): the URL to fetch an embedded image to display with your POD.
+- `zupass_description` (string): a user-friendly text description of your POD
+- `zupass_image_url` (string): the URL to fetch an image to display with your POD
 
 <Aside type="note" title="Images">
-Any URL suitable for an `<image>` tag should work in `zupass_image_url`.  Be careful to select an image URL which will remain available, to avoid broken image links when users save their PODs into the future.  You can also use a `data:` URL for embedded images, though this is suitable only for small icons.  Zupass enforces a maximum size for PODs, currently at 10KB.
+Any URL suitable for an `<image>` tag should work in `zupass_image_url`.  Be careful to select an image URL which will remain available, to avoid broken image links when users save their PODs into the future.  You can also use a `data:` URL for embedded images, though this is suitable only for small icons.  Zupass enforces a maximum size for PODs, currently 10KB.
 </Aside>
 
-Outside of Zupass, how you display your PODs is entirely up to you. You can use the JSON format defined by `pod.toJSON()` which is intended to be human-readable, but you can also invent your own formats more specific to your app.
+Outside of Zupass, how you display your PODs is entirely up to you. You can use the JSON format defined by [`pod.toJSON()`](https://docs.pcd.team/classes/_pcd_pod.POD.html#toJSON) which is intended to be human-readable, but you can also invent your own formats more specific to your app.
 
-## Suggested Best Practices
-
-Here are some remaining suggestions about naming and using POD entries, which don't depend on reserved characters or names.
+## Suggestions and Examples
 
 ### Ownership
 
