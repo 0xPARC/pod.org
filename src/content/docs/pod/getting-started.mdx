@@ -20,7 +20,7 @@ To get started with PODs, you will need to install the `@pcd/pod` package, using
   pkg="@pcd/pod"
 />
 
-The package is available in CJS or ESM format, and will work either in browser or in a server. The example code makes use of bigint literals, so requries a target of at least ES2020.
+The package is available in CJS or ESM format, and will work either in browser or in a server. The example code makes use of bigint literals, so requires a target of at least ES2020.
 
 ## Imports
 
@@ -64,7 +64,7 @@ const myEntries: PODEntries = {
 ```
 
 <Aside type="note" title="Semaphore Identities">
-GPCs use the Semaphore protocol to determine ownership of PODs. In Semaphore V4, identities are EdDSA signing keys, which is the same type of key which issuers use to sign PODs (see below).  The `cardholder` value above is the owner's public key. You might obtain a user's public key from Zupass using the [Z API](/z-api/introduction), create a new identity using the [Semaphore libary](https://www.npmjs.com/package/@semaphore-protocol/identity), or simply generate a keypair using the [eddsa-poseidon](https://www.npmjs.com/package/@zk-kit/eddsa-poseidon) library.
+GPCs use the Semaphore protocol to determine ownership of PODs. In Semaphore V4, identities are EdDSA signing keys, which is the same type of key which issuers use to sign PODs (see below).  The `cardholder` value above is the owner's public key. You might obtain a user's public key from Zupass using the [Z API](/z-api/introduction), create a new identity using the [Semaphore library](https://www.npmjs.com/package/@semaphore-protocol/identity), or simply generate a keypair using the [eddsa-poseidon](https://www.npmjs.com/package/@zk-kit/eddsa-poseidon) library.
 </Aside>
 
 ## Sign a POD
