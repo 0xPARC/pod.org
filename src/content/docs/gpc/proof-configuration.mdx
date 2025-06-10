@@ -3,6 +3,193 @@ title: Proof Configuration
 description: What do you want to prove?
 ---
 
-## Coming Soon
+import { Aside } from '@astrojs/starlight/components';
 
-Please pardon our dust as we finish this site.  In the mean time, check out the [learning resources](/learning).  You can also ask questions in our Telegram group at [t.me/zupass](https://t.me/zupass).
+You can use GPC to make proofs about PODs, but how do you specify what you want to prove? You can learn more about the proving flow on the [Proving and Verification](./proving-and-verifying) page.  This page covers the full configurability of GPCs, and all the things you can prove with them.
+
+## Configuring a Proof
+
+When you generate a proof, you say what to prove using two arguments. [Proof Configuration](https://docs.pcd.team/types/_pcd_gpc.GPCProofConfig.html) specifies what you're proving in the form of constraints. It also gives names to the inputs and specifies which parts of those inputs should be revealed. [Proof Inputs](https://docs.pcd.team/types/_pcd_gpc.GPCProofInputs.html) uses the names assigned by the config to provide the data which satisfies the constraints.
+
+A proof config is often fixed by the app use case, and reused for many proofs. The config might be part of a request from the verifier which triggers the creation of a proof.  In contrast, at least some of the inputs are likely to vary with each proof. It might be up to the end user to select the inputs which will make the proof valid.
+
+Each of the constraints of a proof correspond to a module in the [ZK circuit](https://docs.circom.io/background/background/) used to generate the proof. For instance, each POD mentioned in the configuration needs an Object module to verify its signature.  Each entry mentioned in the configuration needs an Entry module to verify its inclusion in the POD's Merkle tree.
+
+The [GPC compiler](./proving-and-verifying#overall-flow) translates the application's configuration and inputs into the numeric inputs required by the modules. It also picks a circuit from the available family with enough modules to accept those inputs. More modules means a larger circuit and a more expensive proving process (more time, more memory). See the [artifacts](./artifacts) page for more about the modular circuit family.
+
+The page below walks through all of the [supported constraints](#supported-constraints) you can use in your applications.  But first let's walk through an example configuration.
+
+## A Real-World Example
+
+A forum might want a user to prove they attended a community event without revealing which one. [Zupass](https://zupass.org) holds a user's tickets to various events as PODs. When the user logs in, the forum sends a request using the [Z API](/z-api/introduction), specifying the fields of the ticket POD to check or reveal (constraints). The forum also provides a list of acceptable event IDs or ticket signing authorities (to include in the inputs). Zupass then allows the user to pick from their tickets which match these constraints, and generate a proof to send back to the forum.
+
+You can learn more about how make this request with the Z API on the [Ticket Proofs](/z-api/ticket-proofs) page, but for this discussion we're interested in the resulting GPCProofConfig which could be defined in TypeScript like this:
+
+```ts
+{
+    const ticketConfig = {
+        pods: {
+            ticket: {
+                entries: {
+                    attendeeEmail: { isRevealed: true },
+                    eventId: { isRevealed: false,
+                               isMemberOf: "validEventIDs" },
+                    owner: { isRevealed: false,
+                             isOwnerID: "SemaphoreV4" }
+                },
+
+                signerPublicKey: { isRevealed: false,
+                                   isMemberOf: "trustedTicketSigners" }
+            }
+        }
+    }
+}
+```
+
+This configuration implies the need to include four inputs, which are given names in the configuration.  Some of these names are cryptographically important while others are developer choice:
+
+- `ticket` identifies a POD containing at least 3 entries named `attendeeEmail`, `eventId`, and `owner`.
+  - The name `ticket` is arbitrary, used to link together config and inputs.
+  - the names of the entries are cryptographically verified, and were selected by the POD's signer.
+- `validEventIDs` and `trustedTicketSigners` name lists of values which are compared to values in the POD.
+  - The list names are arbitrary, used to link together config and inputs.
+- `SemaphoreV4` identifies the type of private key the owner must provide to prove their ownership of the POD.
+  - The name `SemaphoreV4` corresponds to one of the owner identity formats supported by the library.
+
+
+## Configuration Structure
+
+The GPCProofConfig type is structured around the different categories of constraints you can use in a proof. See the [API Reference](https://docs.pcd.team/types/_pcd_gpc.GPCProofConfig.html) for full details. The example below shows how each category of constraints fits into the configuration.  Each comment corresponds to one of the [constraint](#supported-constraints) sections below.
+
+```ts
+    const ticketConfig = {
+        pods: {
+            <POD name 1>: {
+                entries: {
+                    <entry name 1>: {
+                        // Entry constraints for entry 1...
+                    },
+                    <entry name 2>...
+                }
+
+                // Object constraints for POD 1...
+            }
+            <POD name 2>...
+        }
+
+        // Global constraints...
+    }
+
+```
+
+## Supported Constraints
+
+This section covers all possible GPC constraints in these categories:
+
+- **Entry constraints** apply to a single entry of a single POD. The entry configuration always specifies whether the entry value should be revealed, then usually contains additional [constraints](#entry-constraints) on the entry.
+- **Object constraints** apply to a single POD included in the proof. In addition to the named entries of the POD, these include a set of [virtual entries](#virtual-entries) which constrain object-level metadata (such as the contentID) in a format similar to entry constraints.
+- **Global constraints** apply to all of the input PODs together. This includes [tuples](#tuples) which group together multiple entries as a single value.  There are also some [global constraint](#global-constraints) which control the behavior of the overall proof.
+- **Other Inputs** which don't directly match the config structure are also described [below](#other-inputs)
+
+### Entry Constraints
+
+The named entries of PODs are the primary source of data to constrain in your proofs, and the most types of constraints, most of them optional.
+
+<Aside type="note" title="Presence or Absence">
+By mentioning an entry in your configuration you are implicitly proving that such an entry exists in the POD.  Even if the value is not revealed, the presence an entry by that name is revealed. If that's all you want to prove, you can configure an entry with `isRevealed: false` and no other constraints. You'll need to do this if you want to refer to the entry by name in another entry or tuple.
+
+Any entries not mentioned in the configuration may or may not exist in the POD since nothing is being proven about them. You might trust the issuer to always follow a schema containing certain entries, but nothing stops anyone from issuing a POD containing some but not all of a schema.
+
+It isn't possible to directly prove an entry does not exist in a POD. A possible workaround for that is to issue PODs with a the value `null` and reveal that entry in your configuration.
+</Aside>
+
+The following constraints can be applied to any type of value, because they operate on the value hash:
+
+- **Visibility** ([isRevealed](https://docs.pcd.team/types/_pcd_gpc.GPCProofEntryConfigCommon.html)) is the only required configuration for every entry.  If set to `true` then the entry value will be included in the revealed claims and visible to the verifier.  Otherwise the value is hidden, but can still be constrained.
+- **Equality** ([equalsEntry](https://docs.pcd.team/types/_pcd_gpc.GPCProofEntryConfigCommon.html), [notEqualsEntry](https://docs.pcd.team/types/_pcd_gpc.GPCProofEntryConfigCommon.html)) constrains that two entries are (or ar not) equal to each other. You specify the second entry to compare using a qualified name like `otherPOD.entryName`, and can refer to [virtual entries](#virtual-entries). Each entry can have only one equality check, but since these are defined unidirectionally you can chain them together to constrain several values to be equal.
+- **List Membership** ([isMemberOf](https://docs.pcd.team/types/_pcd_gpc.GPCProofEntryConfigCommon.html), [isNotMemberOf](https://docs.pcd.team/types/_pcd_gpc.GPCProofEntryConfigCommon.html)) constraints that this entry is (or is not) present in a list of values included as a named public input. This Each entry can have one membership check or non-membership check (not both).
+- **Ownership** ([isOwnerID](https://docs.pcd.team/types/_pcd_gpc.GPCProofEntryConfig.html)) allows the prover to assert ownership of a POD.  They do this by constraining this entry to be equal to the public identifier which corresponds to the private identifier (private key) presented as one of the proof inputs.  The configuration of this constraint doesn't specify the owner's ID, but the name of the identity protocol to use (most often `SemaphoreV4`).
+
+
+The following constraints can be applied only to numeric values which fit in a 64-bit signed integer:
+
+- **Bounds Check** ([inRange](https://docs.pcd.team/types/_pcd_gpc.GPCProofEntryBoundsCheckConfig.html), [notInRange](https://docs.pcd.team/types/_pcd_gpc.GPCProofEntryBoundsCheckConfig.html)) constrains a numeric value to be in (or not in) a closed interval between two numbers, specified as signed `bigint` values. You can combine both `inRange` and `notInRange` checks on the same entry. The bounds are limited to a signed 64-bit range, which you can specify explicitly with the [POD_INT_MAX](https://docs.pcd.team/variables/_pcd_pod.POD_INT_MAX.html) and [POD_INT_MIN](https://docs.pcd.team/variables/_pcd_pod.POD_INT_MIN.html) constants.  All other numeric and arithmetic operations on entry values require a bound check as a prerequisite, in order to limit the size of the inputs.
+- **Inequality** ([greaterThan](https://docs.pcd.team/types/_pcd_gpc.GPCProofEntryInequalityConfig.html), [greaterThanEq](https://docs.pcd.team/types/_pcd_gpc.GPCProofEntryInequalityConfig.html), [lessThan](https://docs.pcd.team/types/_pcd_gpc.GPCProofEntryInequalityConfig.html), [lessThanEq](https://docs.pcd.team/types/_pcd_gpc.GPCProofEntryInequalityConfig.html)) compare this entry to another entry and require the specified numeric relationship. Like equality constraints, you can specify the second entry to compare using a qualified name like `otherPOD.entryName`, and can refer to [virtual entries](#virtual-entries). Each entry can have multiple inequality checks, but only one of each type.  Since these are defined unidirectionally you can chain them together to constrain several values in more complex ways.
+
+<Aside type="note" title="Value Equivalence">
+Keep in mind that value types are hints, not part of the type's identity.  Two values of different types might compare as equal if they are in the same [equivalency category](/pod/values#equivalency-categories), meaning they use the same hash function.
+
+This applies to value constraints like `isMember` and also to numeric constraints like `greaterThan`.  The value `{boolean: true}` is a member of a list containing `{int: 1}`.  Similarly you can constrain that a value of `{date: "1999-01-01"}` is greather than `{cryptographic: 0}`.  Dates are represented as numbers using millis since the epoch (following the JavaScript Date type).
+</Aside>
+
+### Virtual Entries
+
+Virtual entries allow you to constrain global properties of a POD using the same syntax as named entries. All constraints on virtual entries are optional, so they are often omitted from configuration if the default behavior is appropriate. There are two virtual entries available in each POD:
+
+- [signerPublicKey](https://docs.pcd.team/types/_pcd_gpc.GPCProofObjectConfig.html) is public key of the signer of the POD. This is revealed by default, since you shouldn't trust a POD if you don't know who signed it.  You can choose to make this private, though you should probably only do so if you are constraining it in some other way, such as using list membership or a tuple.
+- [contentID](https://docs.pcd.team/types/_pcd_gpc.GPCProofObjectConfig.html) is the content ID of the POD, i.e. the root of its Merkle tree. This is private by default, since revealing it reveals some information about the contents of the POD (potentially leading to offline guessing attacks). Comparing an entry of one POD to the content ID of another POD is one way for PODs to refer to or "contain" other PODs.
+
+Virtual entries can be constrained using a subset of the [entry constraints](#entry-constraints) described above.  Specifically you can specify Visibility, 
+
+
+<Aside type="note" title="POD Validity Checks">
+The virtual entries of any given POD are tied to the verification of the structure of the POD. By including a POD in a proof, you are implicitly constraining it to have a valid signature, and constraining each of the named entries to be members of the Merkle tree represented by the POD's Content ID. These things are always verified by a GPC proof even if you don't mention the virtual entries in your configuration.
+</Aside>
+
+### Global Constraints
+
+Global constraints apply to the entire proof, or all of the PODs in it:
+
+- [circuitIdentifier](https://docs.pcd.team/types/_pcd_gpc.GPCProofConfig.html) allows you to optionally specify that a proof should be generated using a specific circuit, rather than picking the best fit from the family. After the proof is generated the config becomes a [bound config](https://docs.pcd.team/types/_pcd_gpc.GPCBoundConfig.html) in which this field is required.
+- [uniquePODs](https://docs.pcd.team/types/_pcd_gpc.GPCProofConfig.html) can be used in a multi-POD proof to constrain that each of the named PODs is unique, meaning none of them have the same content ID. This defaults to false, meaning it is allowed for the prover to use the same POD to satisfy multiple PODs in the proof config.
+
+When you specify an entry by a qualified name in a proof, you can specify a virtual entry instead using a prepended `$`.  For instance if 'pod1' refers to 'pod2' by ID, you could constrain this using an entry constraint like this:
+
+```ts
+    pod1: {
+        otherPOD: { isRevealed: false, equalsEntry: "pod2.$contentID"}
+    }
+```
+
+### Tuples
+
+Tuples allow you to combine multiple entry values into a single value (pair, triple, etc) for use in further constraints.  [Tuples](https://docs.pcd.team/types/_pcd_gpc.GPCProofTupleConfig.html) are defined globally and can contain entries from multiple PODs. A tuple can be constrained in much the same way as an [entry](#entry-constraints), though only List Membership constraints are currently supported.
+
+For example, in the [example](#a-real-world-example) above, rather than separately constraining the signer and event ID, you form them into a pair so that each signer is only allowed to issue tickets to their own events.  You'd then declare a tuple like this:
+
+```ts
+{
+    entries: ["ticket.$signerPublicKey", "ticket.eventId"],
+    isMemberOf: "validSignerEventPairs"
+}
+```
+
+To input the list of valid pairs, each tuple is represented in TypeScript as an [array of PODValues](https://docs.pcd.team/types/_pcd_pod.PODValueTuple.html).
+
+### Other Inputs
+
+In addition to providing all of the named PODs and lists mentioned in the configuration, proof inputs can control a few optional features of a proof:
+
+- **Watermark**: This is an extra value included in the proof in a cryptographically secure way. The watermark can be any [PODValue]() such as a string or number, and can be used to include any extra app-specific data in the proof. Watermarks are often used to hold a unique nonce or timestamp, or to tie a proof to a larger message to avoid replay attacks. See the page on [Verifying Securely](./verification) for more suggestions.
+- **Owner**: Ownership of a POD can be established by proving that you hold the private key which corresponds to an identity mentioned in the POD. See the [Identity and Ownership](./identity-ownership) page for more info.
+
+## Security Reminders
+
+{/*TODO: consider moving this to a dedicated security page*/}
+
+Here are a few reminders of some details above which may be relevant to the security of your app. You can design the schemas of the PODs you issue, or the constraints of your proofs to avoid being tripped up by these issues.
+
+1. Anything not mentioned in the configuration isn't being proven and thus may not be true. For example, any entry not named in your proof may or may not be present in the POD, depending on the issuer's behavior. A value you expect to be a number might actually be a string, unless you constrained it in some way.
+2. PODs are freely copyable. All the PODs mentioned in a proof could be copies of a single POD, unless you use the [`uniquePODs` constraint](#global-constraints).
+3. The signers of each POD (`signerPublicKey`) should always be checked in some way (see [Verifying Securely](#verification)). Anyone an sign a POD with a random key, but it's trusting the signer which makes a POD meaningful. Signers can be checked in several ways:
+    - Reveal the signing key (default behavior) so the verifier can check it outside the proof.
+    - Hide the signing key, but constrain it to be a member of a public list.
+    - Hide the signing key, but constrain it to equal an entry in another "certificate POD" signed by a trusted signer.
+4. POD value types are hints, checked by the library but not by the cryptographic proof. Keep in mind the [equivalency classes](/pod/values) of values which can be identical across types. For instance, even if the expected schema of a POD specifies an `int` value, you can't be sure it's not a huge number until you check it with an `inRange` constraint.
+5. You can prove the presence of a named entry without revealing it, but you can't prove the absence of a named entry without revealing the whole POD. If you're issuing PODs with optional entries, consider setting them to `null` if you think provers need to constrain them in an "unused" state.
+
+## Additional Resources
+
+- For detailed documentation of all parts of configuration, see the API reference for [GPCProofConfig](https://docs.pcd.team/types/_pcd_gpc.GPCProofConfig.html) and [GPCProofInputs](https://docs.pcd.team/types/_pcd_gpc.GPCProofInputs.html).
+- The ZuKYC app has a well-documented configuration in its [proof request](https://github.com/proofcarryingdata/zukyc/blob/main/apps/gpc-verifier/app/util/proofRequest.ts#L42) which exercises many features.
+- The tutorial code includes example configurations for [1 POD](https://github.com/proofcarryingdata/zupass/blob/main/examples/pod-gpc-example/src/gpcExample.ts#L104) and [2 PODs](https://github.com/proofcarryingdata/zupass/blob/main/examples/pod-gpc-example/src/gpcExample.ts#L315).
