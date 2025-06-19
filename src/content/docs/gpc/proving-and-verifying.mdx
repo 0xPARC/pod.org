@@ -3,17 +3,17 @@ title: Proving and Verifying
 description: Proving and verification flow
 ---
 
-This page describes the details of what happens when a prover generate a GPC proof, and what happens when a verifier checks that proof.
+This page describes the details of what happens when a prover generates a GPC proof, and what happens when a verifier checks that proof.
 
 ## Overall Flow
 
 The GPC library allows your app to describe a proof using a human-readable [configuration](./proof-configuration).  This configuration defines what you want to prove, by putting constraints on some given PODs.
 
-GPC is named for the **General Purpose Circuits** used to make proofs. These are modular, configurable [ZK circuits](https://docs.circom.io/background/background/) of different sizes grouped into a family. To prove a configuration, the GPC library will pick the smallest (and therefore fastest) circuit with enough modules for your configuration, and then fetch the binary files (called [artifacts](./artifacts)) needed to use it.
+GPC is named for the **General Purpose Circuits** used to make proofs. These are modular, configurable [ZK circuits](https://docs.circom.io/background/background/) of different sizes grouped into a family. To prove a configuration, the GPC library will pick the smallest (and therefore fastest) circuit with sufficient modules for your configuration, and then fetch the binary files (called [artifacts](./artifacts)) needed to use it.
 
-Your app doesn't need to interact directly with circuits because the **GPC compiler** translates between the application layer and the cryptographic layer of ZK circuits. When you call [gpcProve()](#proof-phases) the compiler translates your configuration into the numeric inputs to a circuit.  It then reverses the process to translate the output of the circuit into the revealed claims.
+Your app doesn't need to interact directly with circuits because the **GPC compiler** translates between the application layer and the cryptographic layer of ZK circuits. When a prover calls [gpcProve()](#proof-phases) the compiler translates your configuration into the numeric inputs to a circuit.  It then reverses the process to translate the output of the circuit into the revealed claims.
 
-When you call [gpcVerify()](#verification-phases), a similar compilation process happens. Repeating compilation confirms that the configuration and claims match the inputs to the circuit when it is verified. Verification returns a simple boolean result, so no decompilation is necessary.
+When a verifier calls [gpcVerify()](#verification-phases), a similar compilation process happens. Repeating compilation confirms that the configuration and claims match the inputs to the circuit when it is verified. Verification returns a simple boolean result, so no decompilation is necessary.
 
 ![proof and verification compiler](../../../assets/proving-and-verifying.jpg)
 
@@ -60,7 +60,7 @@ Verification will throw an error if the inputs are malformed, or else return a b
 Inside of [gpcProve()](https://docs.pcd.team/functions/_pcd_gpc.gpcProve.html) the proving process goes through several phases:
 
 1. **Check**: Validate all arguments and throw an error if any of them are malformed or contain illegal values. This checks structure and valid ranges, but doesn't do cryptographic validation.
-2. **Requirements**: Determine the number of modules required for the configured proof, and pick the smallest circuit which can fit. Or else if the config contains a specific circuit identifier, ensure that it contains the required modules.
+2. **Requirements**: Determine the number of modules and size parameters required for the configured proof  Then ick the smallest circuit which can fit. Or else if the config contains a specific circuit identifier, ensure that specific circuit can fit.
 3. **Bind**: Canonicalize the configuration and add the selected circuit identifier to generate the Bound Configuration.
 4. **Compile**: Translate the configuration into the inputs for the selected circuit.
 5. **Load Artifacts**: Form a URL or file path to the specific artifacts (proving key, witness generator) needed, then load them.  This is a fetch from a URL if in browser, or a read from disk otherwise.
@@ -76,7 +76,7 @@ For instance [gpcCheckProvable()](https://docs.pcd.team/functions/_pcd_gpc.gpcCh
 Inside of [gpcVerify()](https://docs.pcd.team/functions/_pcd_gpc.gpcVerify.html) the verification process goes through phases quite similar to proving:
 
 1. **Check**: Validate all arguments and throw an error if any of them are malformed or contain illegal values. This checks structure and valid ranges, but doesn't do cryptographic validation.
-2. **Requirements**: Determine the number of modules required for the configured proof, and ensure that the circuit identifier in the Bound Configuration fits the required modules.
+2. **Requirements**: Determine the number of modules and size parameters required for the configured proof.  Find the circuit identified in the Bound Configuration and ensure it fits the requirements.
 4. **Compile**: Translate the configuration and claims into the public signals for the selected circuit.
 5. **Load Artifacts**: Form a URL or file path to the specific artifact (verification key) needed, then load it. This is a fetch from a URL if in browser, or a read from disk otherwise.
 6. **Verify Proof**: The cryptographic process of proof verification uses verification key to process the public signals and determine whether the proof is cryptographically valid.

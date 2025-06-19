@@ -5,7 +5,7 @@ description: What do you want to prove?
 
 import { Aside } from '@astrojs/starlight/components';
 
-So you know can use [GPCs](/gpc/introduction) to [make proofs](./proving-and-verifying) about PODs, but how do you specify what you want to prove? This page covers the full configurability of GPCs, and all the things you can prove with them.
+So you know you can use [GPCs](/gpc/introduction) to [make proofs](./proving-and-verifying) about PODs, but how do you specify what you want to prove? This page covers the full configurability of GPCs, and all the things you can prove with them.
 
 ## Configuring a Proof
 
@@ -60,7 +60,7 @@ What if the community forum was open only to people who attended more than one e
 
 ```ts
 {
-    const twoTicketCOnfig = {
+    const twoTicketConfig = {
         pods: {
             ticket1: {
                 entries: {
@@ -129,7 +129,7 @@ This section covers all possible GPC constraints in these categories:
 - **Entry constraints** apply to a single entry of a single POD. The entry configuration always specifies whether the entry value should be revealed, and usually contains additional [constraints](#entry-constraints) on the entry.
 - **Object constraints** apply to a single POD included in the proof. In addition to the named entries of the POD, these include a set of [virtual entries](#virtual-entries) which constrain object-level metadata (such as the contentID) in a format similar to entry constraints.
 - **Global constraints** apply to all of the input PODs together. This includes [tuples](#tuples) which group together multiple entries as a single value.  There are also some [global constraints](#global-constraints) which control the behavior of the overall proof.
-- **Other Inputs** which don't directly match the config structure are also described [below](#other-inputs).s
+- **Other Inputs** which don't directly match the config structure are also described [below](#other-inputs).
 
 ### Entry Constraints
 
@@ -146,11 +146,11 @@ It isn't possible to directly prove an entry does not exist in a POD. If your ap
 The following constraints can be applied to any type of value.  They are implemented by using the hash of the value.
 
 - **Visibility** ([isRevealed](https://docs.pcd.team/types/_pcd_gpc.GPCProofEntryConfigCommon.html)) is the only required configuration for every entry.  If set to `true` then the entry value will be included in the revealed claims and visible to the verifier.  Otherwise the value is hidden, but can still be constrained.
-- **Equality** ([equalsEntry](https://docs.pcd.team/types/_pcd_gpc.GPCProofEntryConfigCommon.html), [notEqualsEntry](https://docs.pcd.team/types/_pcd_gpc.GPCProofEntryConfigCommon.html)) constrains that two entries are (or ar not) equal to each other. You specify the second entry to compare using a qualified name like `otherPOD.entryName`, and can refer to [virtual entries](#virtual-entries). Each entry can have only one equality check, but since these are defined unidirectionally you can chain them together to constrain several values to be equal.
-- **List Membership** ([isMemberOf](https://docs.pcd.team/types/_pcd_gpc.GPCProofEntryConfigCommon.html), [isNotMemberOf](https://docs.pcd.team/types/_pcd_gpc.GPCProofEntryConfigCommon.html)) constraints that this entry is (or is not) present in a list of values included as a named public input. This Each entry can have one membership check or non-membership check (not both).
-- **Ownership** ([isOwnerID](https://docs.pcd.team/types/_pcd_gpc.GPCProofEntryConfig.html)) allows the prover to assert [ownership](./identity-ownership) of a POD. More specifically, this constrains the entry to be equal to the public identifier corresponding to the private identifier (private key) presented as one of the proof inputs. The string in this constraint is identity protocol to use, most often `SemaphoreV4`. This is a type of equality constraint, so cannot be combined with `equalsEntry` or `notEqualsEntry`.
+- **Equality** ([equalsEntry](https://docs.pcd.team/types/_pcd_gpc.GPCProofEntryConfigCommon.html), [notEqualsEntry](https://docs.pcd.team/types/_pcd_gpc.GPCProofEntryConfigCommon.html)) constrains that two entries are (or are not) equal to each other. You specify the second entry to compare using a qualified name like `otherPOD.entryName`, and can refer to [virtual entries](#virtual-entries). Each entry can have only one equality check, but since these are defined unidirectionally you can chain them together to constrain several values to be equal.
+- **List Membership** ([isMemberOf](https://docs.pcd.team/types/_pcd_gpc.GPCProofEntryConfigCommon.html), [isNotMemberOf](https://docs.pcd.team/types/_pcd_gpc.GPCProofEntryConfigCommon.html)) constraints that this entry is (or is not) present in a list of values included as a named public input. Each entry can have one membership check or non-membership check (not both). The maximum size of the list depends on the circuit parameters.
+- **Ownership** ([isOwnerID](https://docs.pcd.team/types/_pcd_gpc.GPCProofEntryConfig.html)) allows the prover to assert [ownership](./identity-ownership) of a POD. This requires that the owner present their private ID (key) as one of the proof inputs. This constraint specifically requires the entry value to be equal to the public ID (key) derived from the given private ID. The string in the constraint definition is the identity protocol to use, most often `SemaphoreV4`. This is a specialized equality constraint, so cannot be combined with `equalsEntry` or `notEqualsEntry`.
 
-The following numerical constraints can be applied only to numeric values which fit in a 64-bit signed integer (such as the `int`, `boolean` or `date` types). They operate on the value itself, not only its hash.  Since they constrain the value to be a number, and can be used if you want to be sure of the type of an unrevealed value. They operate on the value itself, not only its hash.
+The following numerical constraints can be applied only to numeric values which fit in a 64-bit signed integer (such as the `int`, `boolean` or `date` types). They operate on the value itself, not only its hash.  They also implicitly constrain the value to be a number, so they can be used if you want to be sure an unrevealed value is actually a number rather than some other type.
 
 - **Bounds Check** ([inRange](https://docs.pcd.team/types/_pcd_gpc.GPCProofEntryBoundsCheckConfig.html), [notInRange](https://docs.pcd.team/types/_pcd_gpc.GPCProofEntryBoundsCheckConfig.html)) constrains a numeric value to be in (or not in) a closed interval between two numbers, specified as signed `bigint` values. You can combine both `inRange` and `notInRange` checks on the same entry. The bounds are limited to a signed 64-bit range, which you can specify explicitly with the [POD_INT_MAX](https://docs.pcd.team/variables/_pcd_pod.POD_INT_MAX.html) and [POD_INT_MIN](https://docs.pcd.team/variables/_pcd_pod.POD_INT_MIN.html) constants.  All other numeric and arithmetic operations on entry values require a bound check as a prerequisite, in order to limit the size of the inputs.
 - **Inequality** ([greaterThan](https://docs.pcd.team/types/_pcd_gpc.GPCProofEntryInequalityConfig.html), [greaterThanEq](https://docs.pcd.team/types/_pcd_gpc.GPCProofEntryInequalityConfig.html), [lessThan](https://docs.pcd.team/types/_pcd_gpc.GPCProofEntryInequalityConfig.html), [lessThanEq](https://docs.pcd.team/types/_pcd_gpc.GPCProofEntryInequalityConfig.html)) compare this entry to another entry and require the specified numeric relationship. Like equality constraints, you can specify the second entry to compare using a qualified name like `otherPOD.entryName`, and can refer to [virtual entries](#virtual-entries). Each entry can have multiple inequality checks, but only one of each type.  Since these are defined unidirectionally you can chain them together to constrain several values in more complex ways.
@@ -196,10 +196,15 @@ Tuples allow you to combine multiple entry values into a single value (pair, tri
 For example, in the [example](#a-real-world-example) above, rather than separately constraining the signer and event ID, you could form them into a pair so that each signer is only allowed to issue tickets to their own events.  You'd then declare a tuple like this:
 
 ```ts
-signerEventPair: {
-    entries: ["ticket.$signerPublicKey", "ticket.eventId"],
-    isMemberOf: "validSignerEventPairs"
-}
+const pairConfig = {
+    pods: { /*... as above ...*/ },
+    tuples: {
+        signerEventPair: {
+            entries: ["ticket.$signerPublicKey", "ticket.eventId"],
+            isMemberOf: "validSignerEventPairs"
+        }
+    }
+};
 ```
 
 To input the list of valid pairs, each tuple is represented in TypeScript as an [array of PODValues](https://docs.pcd.team/types/_pcd_pod.PODValueTuple.html).
@@ -219,7 +224,7 @@ Here are a few reminders of some details above which may be relevant to the secu
 
 - Anything not mentioned in the configuration isn't proven and thus may not be true. For example, any entry not named in your proof may or may not be present in the POD, depending on the issuer's behavior. A value you expect to be a number might actually be a string, unless you constrained it in some way.
 - PODs are freely copyable. All the PODs mentioned in a proof could be copies of a single POD, unless you use the [`uniquePODs`](#global-constraints) constraint.
-- The signers of each POD (`signerPublicKey`) should always be checked in some way (see [Verifying Securely](./verification)). Anyone an sign a POD with a random key, but it's trust in the issuer which makes a POD meaningful. Signers can be checked in several ways:
+- The signers of each POD (`signerPublicKey`) should always be checked in some way (see [Verifying Securely](./verification)). Anyone can sign a POD with a random key, but it's trust in the issuer which makes a POD meaningful. Signers can be checked in several ways:
   - Reveal the signing key (default behavior) so the verifier can check it outside the proof.
   - Hide the signing key, but constrain it to be a member of a public list.
   - Hide the signing key, but constrain it to equal an entry in another "certificate POD" signed by a trusted signer.
