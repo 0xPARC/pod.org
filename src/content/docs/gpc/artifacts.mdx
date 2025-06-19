@@ -25,7 +25,7 @@ GPC circuits are built from modules which implement reusable logic. These module
 
 Further modules can be chained together in similar ways. The GPC compiler needs enough modules of the right types to meet the needs of a configuration. Extra modules can be disabled or filled in with default values, so the modules in a circuit don't need to be an exact match to the configuration. Some modules also have size parameters, such as the length of a list or tuple. As with the number of modules, this is a maximum size available to the proof, but doesn't need to match exactly.
 
-The count of all modules and sizes in a circuit can be seen in its [circuit parameters](https://docs.pcd.team/types/_pcd_gpcircuits.ProtoPODGPCCircuitParams.html), like the JSON example below. For instance, `maxEntries` indicates the number of Entry modules available, while `maxMerkleDeDepth` is a size parameter of the Entry module affecting its ability to handle entries of large PODs. 
+The count of all modules and sizes in a circuit can be seen in its [circuit parameters](https://docs.pcd.team/types/_pcd_gpcircuits.ProtoPODGPCCircuitParams.html), like the JSON example below. For instance, `maxEntries` indicates the number of Entry modules available, while `merkleMaxDepth` is a size parameter of the Entry module affecting its ability to handle entries of large PODs. 
 
 ```json
 {
