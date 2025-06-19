@@ -20,7 +20,7 @@ To get started with GPCs, you will need to install the `@pcd/gpc` package, using
   pkg="@pcd/gpc"
 />
 
-The package is available in CJS or ESM format, and will work either in browser or in a server. The example code makes use of bigint literals, so requries a target of at least ES2020.
+The package is available in CJS or ESM format, and will work either in browser or in a server. The example code makes use of bigint literals, so requires a target of at least ES2020.
 
 Packaging for a browser requires polyfill for some Node modules, including `constants`, so watch for that if you see any dependency issues. There is a known issue with a dependency `fastfile` which can be resolved by polyfilling `constants` as you can see in [this example](https://github.com/proofcarryingdata/zukyc/pull/3).
 

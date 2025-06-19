@@ -13,7 +13,7 @@ A POD is a cryptographic record made up of entries consisting of a [**name**](./
 
 The full contents of a POD are uniquely identified by a **content ID**. The content ID can be thought of as a hash of the content generated in a way which is deterministic and optimized for easy ZK proving (see the [PODContent](https://docs.pcd.team/classes/_pcd_pod.PODContent.html) class for more). The content ID is signed using the issuer's private key to generate the POD's **signature** (in the [POD](https://docs.pcd.team/classes/_pcd_pod.POD.html) class).
 
-Cryptographically each entry's name and value is identfied by a hash: a [cryptographic number](#cryptographic-numbers) which uniquely and securely identifes that specific name or value. **Name hashes** and **value hashes** are calculated separately for each entry, then hashed together in a [Merkle Tree](https://en.wikipedia.org/wiki/Merkle_tree). The root of the tree is the aforementioned content ID.
+Cryptographically each entry's name and value is identified by a hash: a [cryptographic number](#cryptographic-numbers) which uniquely and securely identifies that specific name or value. **Name hashes** and **value hashes** are calculated separately for each entry, then hashed together in a [Merkle Tree](https://en.wikipedia.org/wiki/Merkle_tree). The root of the tree is the aforementioned content ID.
 
 **Value types** are hints used by the library to determine how a value in TypeScript is reduced to a hash. This also determines how a value can be used in GPC proofs. The type itself is not part of the cryptographic identity of an entry. This means if two values have the same value hash, they are considered the same value, even if they were declared with different types. For instance `{int: 1}` and `{boolean: true}` are the same value.
 
@@ -23,7 +23,7 @@ See the note on [type security](#type-security) below for security implications 
 
 ## Value Types
 
-Below we summarize the details of all supported value types, and how they can be used. Follow the links in column headers for more information about what they mean, or see [below](#supported-types) for info specific to each suported type.
+Below we summarize the details of all supported value types, and how they can be used. Follow the links in column headers for more information about what they mean, or see [below](#supported-types) for info specific to each supported type.
 
 | [POD Type](#supported-types) | [TypeScript Type](#supported-types) | [Hash](#hash-functions) | [Values](#supported-types) | [Equivalency](#equivalency-categories) | [Arithmetic](#arithmetic-types) | 
 | --- | --- | --- | --- | --- | --- |

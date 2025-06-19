@@ -41,7 +41,7 @@ This limited character set is restrictive today partially to allow it to expand 
 The `PODName` specification is also used in GPC configuration when a name is needed to refer to a whole POD, or a list of values, etc. These names follow the same `PODName` rules for convenience, but this detail is not cryptographically relevant. These names exist only for the GPC compiler to correlate different parts of the config and inputs, and do not appear in the ZK circuit.
 
 <Aside type="note" title="Name Order">
-The GPC compiler uses lexicographic order to sort multiple PODs or entries before asigning the modules in a circuit. Thus while the extended names in config are arbitrary and could be changed, it is important that prover and verifier at least agree on their order.
+The GPC compiler uses lexicographic order to sort multiple PODs or entries before assigning the modules in a circuit. Thus while the extended names in config are arbitrary and could be changed, it is important that prover and verifier at least agree on their order.
 </Aside>
 
 The GPC compiler also uses some special characters when naming things in constraints, for example:
