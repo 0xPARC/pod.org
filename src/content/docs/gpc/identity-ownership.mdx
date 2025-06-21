@@ -7,7 +7,7 @@ import { Aside } from '@astrojs/starlight/components';
 
 [PODs](/pod/introduction) can contain arbitrary data (names and values), and [GPCs](/gpc/introduction) let you make any proof about that data. Many POD apps really want to prove things about people, which is where identity systems come in. This page discusses how you can identify users, and bind PODs which are owned by those users, while maintaining security and privacy.
 
-- [User Identity](#user-identities) associates a public key with a user. They user has unique access to the corresponding private key (secret), and they can prove that knowledge when necessary.
+- [User Identity](#user-identities) associates a public key with a user. The user has unique access to the corresponding private key (secret), and they can prove that knowledge when necessary.
 - [Ownership](#ownership) associates a POD with a user by including their public key in the POD. An ownership check in a GPC configuration requires the user to prove they have the proper private key.
 - [Nullifiers](#nullifiers) provide a way to link together actions by the same anonymous user without revealing their full identity.
 
@@ -15,9 +15,9 @@ import { Aside } from '@astrojs/starlight/components';
 
 ### Semaphore Identities
 
-The POD system shares the same identity layer as the [Semaphore](https://semaphore.pse.dev/learn) protocol.  In Semaphore V4, a user's identity is an EdDSA key pair usable for signing as well as for identity verification. (Unlike some public key systems like RSA, EdDSA does not include an encryption capability.) This is the same algorithm used to [sign PODs](/pod/getting-started#sign-a-pod), which conveniently allows users to prove ownership and issue their own PODs using the same key. 
+The POD system shares the same identity layer as the [Semaphore](https://semaphore.pse.dev/learn) protocol.  In Semaphore V4, a user's identity is an EdDSA key pair usable for signing as well as for identity verification. (Unlike some public key systems like RSA, EdDSA does not include an encryption capability.) This is the same algorithm used to [sign PODs](/pod/getting-started#sign-a-pod), which conveniently allows users to prove ownership of PODs issued to them, or to issue their own PODs using the same key. 
 
-In Zupass each user generates a Semaphore identity when they sign up. They store it in their own local storage (backed up only in encrypted form) and publish the public key to Zupass. Apps can use the [Z API](/z-api/introduction) to ask for a user's [public identity](/z-api/getting-started#user-identity), or to ask the user to [sign a POD](/z-api/geting-started#signing-pods) using their private key.
+In Zupass each user generates a Semaphore identity when they sign up. They store it in their own local storage (backed up only in encrypted form) and publish the public key to Zupass. Apps can use the [Z API](/z-api/introduction) to ask for a user's [public identity](/z-api/getting-started#user-identity), or to ask the user to [sign a POD](/z-api/getting-started#signing-pods) using their private key.
 
 Your app doesn't need to rely on Zupass identities. You can freely create and use your own identities, so long as you have somewhere to store them securely. The examples in this page make the traditional assumption that there will be a one-to-one correspondence of identities to users, but that isn't necessarily the case. You might assign identities for automated servers or agents which issue PODs. Users might have multiple identities they use to maintain anonymity across different systems. It's up to you how to use the tools available.
 
@@ -52,10 +52,10 @@ If you want to verify your identity contains the right sort of secret, you can t
 
 ### Storing Identities
 
-If your app creates and manages its own identities, you'll need to store them for later use, you can export the public key to a string. Be sure to store the string somewhere private!
+If your app creates and manages its own identities, you'll need to store them for later use. You can export the public key to a string. Be sure to store the string somewhere private!
 
 ```ts
-const exportedIdentity = identity.export();
+const exportedIdentity = identity.export();  // This is a Base64-encoded string
 saveIDToSomewhere(exportedIdentity);
 ```
 
@@ -74,7 +74,7 @@ To include a user's identity in a POD entry, encode their public key as follows:
 
 ```ts
     const ownerIdentity = new Identity();
-    const ownerPubKey = encodePublicKey(identity.publicKey);
+    const ownerPubKey = encodePublicKey(ownerIdentity.publicKey);
     const podEntries = {
         /* ... other entries as desired ... */
         owner: { type: "eddsa-pubkey", value: ownerPubKey }
@@ -86,20 +86,20 @@ To sign a POD, encode the user's private key as follows:
 ```ts
     const signerIdentity = new Identity();
     const signingKey = encodePrivateKey(signerIdentity.privateKey);
-    const pod = POD.sign(podEntries)
+    const pod = POD.sign(podEntries, signingKey)
 ```
 
 The third common use of identities with PODs is to prove ownership, as covered in the next section.
 
 <Aside type="note" title="Identities Are Private">
-The two code snippets above likely don't belong in the same function because it would be rare for the private key of two different users to be available at the same time. The signer of a POD usually doesn't have to include their public key in an entry because it's implicitly present in `pod.signerPublicKey`.  For specific apps, there may be cases where a user self-signs a POD and wants to prove ownership of it later, or where a user is operating using two Identities at once for use in different scopes.
+The two code snippets above likely don't belong in the same function because it would be rare for the private keys of two different users to be available at the same time. The signer of a POD usually doesn't have to include their public key in an entry because it's implicitly present in `pod.signerPublicKey`.  For specific apps, there may be cases where a user self-signs a POD and wants to prove ownership of it later, or where a user is operating using two Identity objects at once for use in different scopes.
 
 The Identity class operates on the private key so it isn't intended as a way to name another user. For that purpose, use the encoded public key as shown above.  This can be exchanged as a string, or as a [PODValue](https://docs.pcd.team/types/_pcd_pod.PODEdDSAPublicKeyValue.html) using the "eddsa-pubkey" type. The POD and GPC libraries don't make direct use of the Semaphore identity commitment, which is a hash of the public key, though the same hashing is a part of the owner module's verification.
 </Aside>
 
 ## Ownership
 
-On their own PODs are just data, and freely copyable.  However it's often helpful to introduce a notion of PODs being owned or "soulbound" to a specific user. By asking a user to prove ownership, you can avoid people using other people's tickets, make game items non-transferrable, etc. Thanks to the privacy of ZK proofs, a user can prove they own a POD without having to reveal their identity.
+On their own, PODs are just data, and freely copyable.  However, it's often helpful to introduce a notion of PODs being owned or "soulbound" to a specific user. By asking a user to prove ownership, you can avoid people using other people's tickets, make game items non-transferable, etc. Thanks to the privacy of ZK proofs, a user can prove they own a POD without having to reveal their identity.
 
 ### What Ownership Means
 
@@ -140,7 +140,7 @@ In this example the `identity` is a [Semaphore V4 Identity](#semaphore-identitie
 
 ### Public or Private
 
-The visibility of the POD's owner can be controlled using the `isRevealed` setting, like any other POD entry. If the owner's identity is revealed, then the proof of ownership might help establish that the prover is the person identified in the POD, rather than simply having a POD which references that person. If it's not revealed, then proof of ownership is a way of authenticating a user's credentials while maintaining anonymity.
+The visibility of the POD's owner can be controlled using the `isRevealed` setting, like any other POD entry. If the owner's identity is revealed, then the proof of ownership might help establish that the prover is the person identified in the POD, rather than simply having a POD which references that person. If it's not revealed, then a proof of ownership is a way of authenticating a user's credentials while maintaining anonymity.
 
 If you're building an anonymous app you might need to consider if you need to correlate multiple proofs from the same anonymous user, which is where nullifiers come in.
 
@@ -148,7 +148,7 @@ If you're building an anonymous app you might need to consider if you need to co
 
 GPC proofs allow provers to hide their identity while securely proving certain credentials, such as ownership of a ticket, or an ID card with an age over 21. Each proof is independent of any previous proofs, so you can't tell if each anonymous interaction is from the same user or a different one.  This is a good property for fully anonymous systems.
 
-In some cases, you need to slightly loosen the level of anonymity for safety reasons. For example a voting system wants to let users vote in secret, but doesn't want to allow the same user to vote twice. An anonymous message board wants to rate-limit posters to avoid abuse, while not de-anonymizing its users. A nullifier is a mechanism for pseudonomity which covers these situations.
+In some cases, you need to slightly loosen the level of anonymity for safety reasons. For example, a voting system wants to let users vote in secret, but doesn't want to allow the same user to vote twice. An anonymous message board wants to rate-limit posters to avoid abuse, while not de-anonymizing its users. A nullifier is a mechanism for pseudonomity which covers these situations.
 
 ### What is a Nullifier?
 
@@ -162,7 +162,7 @@ The qualifier "for the same purpose" above is important.  You don't want every p
 
 Thus the same user (identity) using the same external nullifier (scope) will always generate the same nullifier (hash).  A different identity, or a different external nullifier, will result in a different hash.
 
-An external nullifier can be any unique [PODValue](https://docs.pcd.team/types/_pcd_pod.PODValue.html), such as a string, number, or timestamp. Picking the right one lets you decide what sort of actions you want to be correlated. For instance a voting system would use a different external nullifier for each election. Thus nobody could vote twice in the same election, but the system wouldn't know a voter's patterns between elections.
+An external nullifier can be any unique [PODValue](https://docs.pcd.team/types/_pcd_pod.PODValue.html), such as a string, number, or timestamp. Using a string lets you include any qualifying information to ensure uniqueness, such as a [reverse domain name](https://en.wikipedia.org/wiki/Reverse_domain_name_notation) identifier. Picking the right external nullifier lets you decide what sort of actions you want to be correlated. For instance, a voting system would use a different external nullifier for each election. Thus nobody could vote twice in the same election, but the system wouldn't know a voter's patterns between elections.
 
 ### Proving with a Nullifier
 
@@ -186,7 +186,7 @@ The prover and verifier should generally agree on the external nullifier in adva
 
 The partial anonymity provided when using nullifiers can be tricky to get right. You don't want to accidentally reveal too much about your users, or allow your app to be abused. Consider these risks when designing your app:
 
-**Multiple Identities**: Since identities are just random keys, it can be easy to perform a [Sybil attack](https://en.wikipedia.org/wiki/Sybil_attack) by generating a new random identity, resulting in a different nullifier. The constraints of the proof are what makes an identity important and hard to fake. E.g. the identity is the owner of a ticket POD issued by a trusted authority. Vulnerability to Sybil attacks depends on how easy it is to get that authority to issue a new POD to a new identity. If a user can easily reset their account and get a new ticket POD issued, then they can come back with a new nullifier and vote again.
+**Multiple Identities**: Since identities are just random keys, it can be easy to perform a [Sybil attack](https://en.wikipedia.org/wiki/Sybil_attack) by generating a new random identity, resulting in a different nullifier. The constraints of the proof are what make an identity important and hard to fake. E.g. the identity is the owner of a ticket POD issued by a trusted authority. Vulnerability to Sybil attacks depends on how easy it is to get that authority to issue a new POD to a new identity. If a user can easily reset their account and get a new ticket POD issued, then they can come back with a new nullifier and vote again.
 
 [Zupoll](https://zupoll.org/) (which uses Semaphore group proofs pre-dating GPCs) avoids this by using a fixed snapshot of membership at the time that a poll begins. A POD-based app could do something similar by revealing the issue date of a ticket and only accepting votes from tickets issued before the poll began.
 
@@ -194,8 +194,8 @@ The partial anonymity provided when using nullifiers can be tricky to get right.
 
 For instance, the ZuRat anonymous telegram bot used at Devconnect 2024 used a single external nullifier which allowed for rate limiting, but also allowed assigning each poster a consistent pseudonym across all messages.  A more anonymous version might rotate the external nullifier every hour, allowing for coarse-grained rate limiting, but not allowing correlation of messages from the same user across longer periods.
 
-**Malicious Proof Requests** Since external nullifiers can be any value, they are not inherently tied to a specific app or meaning. A malicious app could convince a user to make a non-anonymous proof with the same external nullifier they used for an anonymous proof in a different app.  This will result in the same nullifier hash, and could deanonymize the user. For proofs within a specific use case, the external nullifiers will usually be well-defined, but a general proving app like Zupass can be subject to such an attack.
+**Malicious Proof Requests**: Since external nullifiers can be any value, they are not inherently tied to a specific app or meaning. A malicious app could convince a user to make a non-anonymous proof with the same external nullifier they used for an anonymous proof in a different app.  This will result in the same nullifier hash, and could deanonymize the user. For proofs within a specific use case, the external nullifiers will usually be well-defined, but a general proving app like Zupass can be subject to such an attack.
 
 This risk is one of the reasons your app might generate new private identities for its users, rather than reusing a common identity such as the one provided by Zupass. If the only proofs using that identity are generated in your app, then the scope of nullifiers can be carefully controlled.
 
-There isn't currently a perfect solution to this risk when using a common cryptographic identity. It's best not to generate arbitrary proofs without user confirmation, so the user can see details and be cautious in which proofs they generate. In future, Zupass might introduce a required format for external identifiers used by [Z API](/z-api/introduction) to ensure they are not reused between different applications.
+There isn't currently a perfect solution to this risk when using a common cryptographic identity. It's best not to generate arbitrary proofs without user confirmation, so the user can see details and be cautious in which proofs they generate. In the future, Zupass might introduce a required format for external identifiers used by [Z API](/z-api/introduction) to ensure they are not reused between different applications.
