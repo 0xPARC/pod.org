@@ -3,6 +3,129 @@ title: On-Chain Verification
 description: Verifying GPC proofs on-chain
 ---
 
-## Coming Soon
+import { Aside } from '@astrojs/starlight/components';
 
-Please pardon our dust as we finish this site.  In the mean time, check out the [learning resources](/learning).  You can also ask questions in our Telegram group at [t.me/zupass](https://t.me/zupass).
+The [POD](https://pod.org/pod/introduction)/[GPC](https://pod.org/gpc/introduction) system was designed to make ZK proofs accessible and efficient in all contexts, including mobile apps and smart contracts.  The underlying ZK proof system is Groth16, which generates small proofs which can be efficiently verified.  This makes on-chain verification of proofs generated off-chain feasible.
+
+## Context
+
+This page describes how you can verify GPC proofs on Ethereum or a compatible blockchain which can run Solidity contracts. This leverages the feature of Circom and SnarkJS to [generate a solidity verifier](https://docs.circom.io/getting-started/proving-circuits/#verifying-from-a-smart-contract) for any ZK proof circuit. Doing so requires bypassing some of the user-friendliness provided by the GPC compiler, which leads to some more complex development steps.
+
+We have ideas on how to streamline this process in future, but for now it's not for the faint of heart! These steps should be read as advice from one developer to another. They have been tested by a few apps and are known to work. With limited testing, though, there may be assumptions or missing pieces.  If you run into trouble, please send us [feedback](/feedback)!
+
+### Example App
+
+[FrogJuice](https://frogjuice.fun/) ([source](https://github.com/BuidlGuidl/frogcrypto-squeeze)) is a working prototype app performing on-chain verification.  It accepts as input a Frog POD collected from [Frogcrypto](https://frogcrypto.vercel.app/), stored in [Zupass](https://zupass.org/).
+
+The Solidity contract which sets up verification is here: https://github.com/BuidlGuidl/frogcrypto-squeeze/blob/main/packages/hardhat/contracts/FrogCryptoSqueeze.sol
+
+The TypeScript code which pre-processes the inputs for on-chain verification is here: https://github.com/BuidlGuidl/frogcrypto-squeeze/blob/main/packages/hardhat/contracts/FrogCryptoSqueeze.sol#L144
+
+### Assumptions
+
+The target of these instructions is on-chain verification of a proof generated off-chain. On-chain proving is assumed to be too expensive to be feasible. On-chain parsing and manipulation of PODs (without ZK) is feasible, but separate (involving JSON parsing, and EdDSA/Poseidon cryptography).
+
+These instructions assume you will have a TypeScript app to pre-process the proof and generate input to your smart contract for final verification. This is a developer aid, but not a trusted security property. Your smart-contract needs to double-check any inputs from the off-chain app.
+
+Smart contract programming in Solidity is also assumed. These instructions will help you generate the necessary Solidity code, but we assume you know how to use it.
+
+Some familiarity with the [circom](https://docs.circom.io/) circuit compiler and [SnarkJS](https://github.com/iden3/snarkjs) prover/verifier is also required
+
+## Development Steps
+
+If you're able to walk through all of these steps you should be able to get the point of making a GPC proof and verifying it in a Solidity contract. Once that's working end-to-end you can integrate it into the needs of your app.
+
+### 0 Pre-requisites
+
+These instructions assume familiarity with the [POD](https://pod.org/pod/resources) and [GPC](https://pod.org/gpc/resources) libraries in TypeScript. Pre-processing will also require diving into the lower-level [@pcd/gpcircuits](https://pod.org/gpc/resources) package which implements the circuits behind GPC proofs.
+
+You'll need to follow the normal setup steps for POD + GPC development [here](./getting-started#installation). You'll also need to download the [circuit artifacts](./artifacts#obtaining-artifacts).
+
+You'll also need to install SnarkJS from the instructions [here](https://github.com/iden3/snarkjs?tab=readme-ov-file#install-snarkjs)
+
+### 1 Try it in TypeScript first
+
+Debug off-chain before you try on-chain.  Write a prover and verifier in TypeScript and make sure you can make them work together.  Make sure the TypeScript verifier provides all the data you need to pass through to the next stage of your app using only the public parts of the proof.
+
+This is a good time to capture some samples of your [proof](https://docs.pcd.team/types/_pcd_gpc.GPCProof.html) and [BoundConfig](https://docs.pcd.team/types/_pcd_gpc.GPCBoundConfig.html). Convert them to JSON and save them so you you can use them for later steps.
+
+### 2 Pick a Circuit
+
+Unlike the flexibility of the GPC compiler, a verifier smart-contract needs to be fixed to a specific circuit taken from the GPC circuit family (family name = “proto-pod-gpc”). When you call [gpcProve()](https://docs.pcd.team/functions/_pcd_gpc.gpcProve.html) it automatically picks a circuit with [parameters](https://docs.pcd.team/types/_pcd_gpcircuits.ProtoPODGPCCircuitParams.html) large enough to fit the required proof.  You can perform this selection manually by calling [gpcBindConfig()](https://docs.pcd.team/functions/_pcd_gpc.gpcBindConfig.html) or just pick parameters based on your knowledge of the config and the documentation in the [ProtoPODGPCCircuitParams](https://docs.pcd.team/types/_pcd_gpcircuits.ProtoPODGPCCircuitParams.html) type.
+
+The circuit is identified by a circuit identifier like `proto-pod-gpc_1o-5e-6md-2nv-0ei-0x0l-0x0t-1ov3-1ov4`. The values in the identifier correspond to the parameters, and the identifier is used to name the circuit artifacts you’ll need. For all parameters it's safe to use a larger value than you need. The easiest way to pick a circuit identifier is to simply read it from the [BoundConfig](https://docs.pcd.team/types/_pcd_gpc.GPCBoundConfig.html) after proving in Step 1 above.
+
+If any of your [proof inputs](https://docs.pcd.team/types/_pcd_gpc.GPCProofInputs.html) might vary in a way which affects parameters be sure to pick a circuit with a size large enough for all supported inputs, not just the inputs you used in your test. Particular parameters which may vary based on inputs:
+
+- `maxListElements` needs to be large enough for the largest of any membership lists you expect to use.
+- `merkleMaxDepth` controls maximum size of each individual POD, including all of its entries not just those included in the proof. The max number of entries is 2<sup>depth - 1</sup>, so `merkleMaxDepth: 5` allows up to 16 entries per POD.
+
+You can see the full list of available in `circuitParameters.json` on [NPM](https://www.npmjs.com/package/@pcd/proto-pod-gpc-artifacts?activeTab=code). As an advanced option if you don't like the available parameters, you can compile your own circuit family using the instructions in the [@pcd/gpcircuits](https://github.com/proofcarryingdata/zupass/tree/main/packages/lib/gpcircuits) package.
+
+### 3 Generate Verifier Contract
+
+SnarkJS can generate a Solidity contract to verify the proof of a specific circuit.  You’ll need the the circuit’s verification key, which is in the artifacts directory named `${id}-pkey.zkey`, e.g. `proto-pod-gpc_1o-5e-6md-2nv-0ei-0x0l-0x0t-1ov3-1ov4-pkey.zkey`.  As an example, the latest Zupass artifacts can be found [here](https://www.npmjs.com/package/@pcd/proto-pod-gpc-artifacts?activeTab=code), but if your app is using a different artifact store, be sure to use that.
+
+Install SnarkJS following the instructions [here](https://github.com/iden3/snarkjs?tab=readme-ov-file#install-snarkjs), then generate the Solidity contract following the instructions [here](https://github.com/iden3/snarkjs?tab=readme-ov-file#25-turn-the-verifier-into-a-smart-contract).
+
+### 4 Generate Verifier Inputs
+
+The solidity verifier needs the numeric `proof` (with fields referred to as `pi_a`, `pi_b`, and `p_c`) as well as the public signals of the circuit (called `pubSignals`).  The public signals array contains the flattened list of numeric inputs and outputs to the circuit.
+
+This step will need to be repeated to pre-process each proof as it goes on-chain, so write some code to do this in your app before submitting to the chain.
+
+Normally when you call [gpcVerify](https://docs.pcd.team/functions/_pcd_gpc.gpcVerify.html) the GPC [config compiler](./proving-and-verifying#verification-phases) turns human-readable datastructures like [BoundConfig](https://docs.pcd.team/types/_pcd_gpc.GPCBoundConfig.html) and [RevealedClaims](https://docs.pcd.team/types/_pcd_gpc.GPCRevealedClaims.html) into the numeric inputs a circuit needed for verification.  For on-chain verification, you want to capture the output before verification occurs.  You can do so as follows:
+
+- Call [gpcPreVerify](https://docs.pcd.team/functions/_pcd_gpc.gpcPreVerify.html).  This will give you the [circuitDesc](https://docs.pcd.team/types/_pcd_gpc.ProtoPODGPCCircuitDesc.html) (containing the circuit identifier you determined in Step 2) as well as the [circuitPublicInputs](https://docs.pcd.team/types/_pcd_gpcircuits.ProtoPODGPCPublicInputs.html) and [circuitOutputs](https://docs.pcd.team/types/_pcd_gpcircuits.ProtoPODGPCOutputs.html) with their named variables.  The names will be helpful for writing verification code later.
+- Pass the inputs and outputs to [ProtoPodGPC.makePublicSignals()](https://docs.pcd.team/classes/_pcd_gpcircuits.ProtoPODGPC.html#makePublicSignals) (from the [@pcd/gpcircuits](https://docs.pcd.team/modules/_pcd_gpcircuits.html) package) to produce the flattened publicSignals array. This is just a flattened copy of all of the outputs and inputs.
+
+You can see the code in the FrogJuice app to generate `pubSignals` [here](https://github.com/BuidlGuidl/frogcrypto-squeeze/blob/main/packages/nextjs/app/page.tsx#L155).
+
+The `proof` and `pubSignals` are the data you need to pass on-chain, but they’ll need some conversion:
+
+- Make sure the `bigint` values in `pubSignals` are passed as strings: `pubSignals.map(s => s.toString()`
+- The calldata of the smart contract takes the proof elements in a slightly different order than used in TypeScript.  You'll need to manually reverse two of the sub-arrays of `pi_b` like FrogJuice does [here](https://github.com/BuidlGuidl/frogcrypto-squeeze/blob/main/packages/nextjs/app/page.tsx#L178), or else use a library which does so like SnarkJS [here](https://github.com/iden3/snarkjs/blob/master/src/groth16_exportsoliditycalldata.js#L29).
+
+### 5 Set up the Verification
+
+You'll need off-chain code to capture the pre-processing output from Step 4, and set it up to pass to the Solidity verifier you generated in Step 3.  This should be mostly mechanical formatting of parameters, but can also be a place to integrate your own app-specific logic.
+
+Note that when string names and entry values are used in GPC circuits, they are always represented by their hash.  Hashes can be good enough for well-known constants (like common entry names, and known signing keys), but if your smart contract needs access to plaintext values, your off-chain setup code will need to pass them in as well.
+
+At this point you should have what you need to call the `verifyProof` function in the generated smart contract and see that it returns true to indicate a valid proof. If it does, you still have some work to do as described in the [Verifying Securely](./verification) page. You still need to verify that it's a proof of the right configuration.  Otherwise a malicious prover could send you a proof with a config which doesn't constrain anything at all.  You can't trust the off-chain pre-verification to do this, since attackers could submit their own malicious inputs, so the smart contract needs to double-check.  Only after you've checked this should you start to make any decisions based on the values given. The following steps take you through how to do this post-verify checking with less help from the GPC compiler
+
+<Aside type="caution" title="Debugging">
+Be careful with the conversions and order-reversals in Step 4 above.  They're easy to miss, and debugging why a proof is invalid can be difficult. When debugging, try verifying off-chain first to be sure your proof is actually valid, then try to see how it might be different when passed to the smart contract.
+</Aside>
+
+### 6 Check Fixed Config
+
+The public signals described above are in raw numeric form, and may need some extra interpretation to be used normally.  They contain inputs and outputs of 2 categories:
+
+- Configuration parameters derived from the [ProofConfig](https://docs.pcd.team/types/_pcd_gpc.GPCProofConfig.html); usually fixed across all proofs
+- Variable values taken from [proofInputs](https://docs.pcd.team/types/_pcd_gpc.GPCProofInputs.html) such as PODs, membership lists, and watermarks.
+
+Most of the elements of the `pubSignals` array will not be variable, because they represent the configuration of the circuit [modules](./artifacts#modular-circuits).  Even many of the values which come from input pods maybe fixed for your use case.  For instance the signer's public key will often be a constant, and your app might always use the same external nullifier.
+
+The easiest way to validate in such a scenario is to start with a known-good proof.  Your smart contract should check that the input array is exactly equal to this known-good proof, skipping only the few indexes that you expect to vary between proofs.
+
+The remaining variables will likely include revealed entry values in [circuitOutputs](https://docs.pcd.team/types/_pcd_gpcircuits.ProtoPODGPCOutputs.html), which are covered in steps 7 and 8 below. If you want your verifier to support non-constant configuration parameters (such as a bounds check based on a timestamp) you can treat those as variable values in Step 7 below. The only difference is that config parameters are not hashed.
+
+
+You can see these fixed-value checks in the FrogJuice app [here](https://github.com/BuidlGuidl/frogcrypto-squeeze/blob/main/packages/hardhat/contracts/FrogCryptoSqueeze.sol#L192).
+
+### 7 Check Variable Values
+
+After you've verified all of the fixed signals, you're left with the variable signals which represent the important values for your app.  On a case-by-case basis you can figure out what each value in the `pubSignals` array is by mapping them to the names in [circuitPublicInputs](https://docs.pcd.team/types/_pcd_gpcircuits.ProtoPODGPCPublicInputs.html) and [circuitOutputs](https://docs.pcd.team/types/_pcd_gpcircuits.ProtoPODGPCOutputs.html). Alternately, if you run a few examples through, you can see which fields change to confirm you have the offsets right. If you want to fully understand the meaning of these parameters, and are familiar with circom, you can see the family circuit template [here](https://github.com/proofcarryingdata/zupass/blob/main/packages/lib/gpcircuits/circuits/proto-pod-gpc.circom).
+
+Note that public names and values from PODs are represented by their hash. When you know what name or value to expect, you can simply use the hash to identify the value you're looking for.  For variable values where you need to manipulate the plaintext, you'll need to have the raw value passed from off-chain. Your contract should then confirm that the hash matches the corresponding value in `pubSignals`, so attackers can't trick your contract into accepting the wrong values.
+
+To hash values in a way compatible with [podValueHash()](https://docs.pcd.team/functions/_pcd_pod.podValueHash.html) ([source code](https://github.com/proofcarryingdata/zupass/blob/bcfe298b103907fe2f2970eed548e0b948651a58/packages/lib/pod/src/podCrypto.ts#L60)) you'll need two types of hashes:
+- For numbers, use a Poseidon hash. You can see the library FrogJuice uses [here](https://github.com/BuidlGuidl/frogcrypto-squeeze/blob/main/packages/hardhat/contracts/Poseidon.sol).
+- For strings and bytes, you'll need a SHA256 hash followed by a right-shift, as shown [here](https://github.com/proofcarryingdata/zupass/blob/bcfe298b103907fe2f2970eed548e0b948651a58/packages/lib/pod/src/podCrypto.ts#L32).
+
+You can the code which FrogJuice uses to do these checks [here](https://github.com/BuidlGuidl/frogcrypto-squeeze/blob/main/packages/hardhat/contracts/FrogCryptoSqueeze.sol#L144).
+
+### 8 Use Values in your Smart Contract
+
+After the proof is verified, and the public signals are checked, you have inputs for your app.  You can proceed with whatever app functionality you want in our smart contract, secure in the knowledge that the inputs are fully proven.
