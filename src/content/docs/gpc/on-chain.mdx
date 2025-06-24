@@ -17,13 +17,17 @@ We have ideas on how to streamline this process in the future, but for now it's 
 
 [FrogJuice](https://frogjuice.fun/) ([source](https://github.com/BuidlGuidl/frogcrypto-squeeze)) is a working prototype app performing on-chain verification.  It accepts as input a Frog POD collected from [Frogcrypto](https://frogcrypto.vercel.app/), stored in [Zupass](https://zupass.org/).
 
-The Solidity contract that sets up verification is here: https://github.com/BuidlGuidl/frogcrypto-squeeze/blob/main/packages/hardhat/contracts/FrogCryptoSqueeze.sol
+The Solidity contract that sets up verification is [FrogCryptoSqueeze.sol](https://github.com/BuidlGuidl/frogcrypto-squeeze/blob/main/packages/hardhat/contracts/FrogCryptoSqueeze.sol).
 
-The TypeScript code that pre-processes the inputs for on-chain verification is here: https://github.com/BuidlGuidl/frogcrypto-squeeze/blob/main/packages/hardhat/contracts/FrogCryptoSqueeze.sol#L144
+The TypeScript code that pre-processes the inputs for on-chain verification is [page.tsx](https://github.com/BuidlGuidl/frogcrypto-squeeze/blob/main/packages/nextjs/app/page.tsx).
+
+There are links to specific parts of FrogJuice or other example apps included in the relevant steps below.
 
 ### Assumptions
 
-The target of these instructions is on-chain verification of a proof generated off-chain. On-chain proving is assumed to be too expensive to be feasible. On-chain parsing and manipulation of PODs (without ZK) is feasible, but separate (involving JSON parsing, and EdDSA/Poseidon cryptography).
+The target of these instructions is on-chain verification of a proof generated off-chain. By necessity, all the public inputs and revealed claims of the proof will become public on-chain.
+
+Regarding other possible use cases: On-chain proving is assumed to be too expensive to be feasible. On-chain parsing and manipulation of PODs (without ZK) is feasible, but separate (involving JSON parsing, and EdDSA/Poseidon cryptography).
 
 These instructions assume you will have a TypeScript app to pre-process the proof and generate input to your smart contract for final verification. This is a developer aid, but not a trusted security property. Your smart contract needs to double-check any inputs from the off-chain app.
 
@@ -62,11 +66,11 @@ If any of your [proof inputs](https://docs.pcd.team/types/_pcd_gpc.GPCProofInput
 
 You can see the full list of available circuits in `circuitParameters.json` on [NPM](https://www.npmjs.com/package/@pcd/proto-pod-gpc-artifacts?activeTab=code). As an advanced option, if you don't like the available parameters, you can compile your own circuit family using the instructions in the [@pcd/gpcircuits](https://github.com/proofcarryingdata/zupass/tree/main/packages/lib/gpcircuits) package. Just be sure that the prover also uses the same set of artifacts.
 
-### 3 Generate Verifier Contract
+### 3 Generate and Deploy Verifier Contract
 
 SnarkJS can generate a Solidity contract to verify the proof of a specific circuit.  You’ll need the circuit’s verification key, which is in the artifacts directory named `${id}-pkey.zkey`, e.g. `proto-pod-gpc_1o-5e-6md-2nv-0ei-0x0l-0x0t-1ov3-1ov4-pkey.zkey`.  As an example, the latest Zupass artifacts can be found [here](https://www.npmjs.com/package/@pcd/proto-pod-gpc-artifacts?activeTab=code), but if your app is using a different artifact store, be sure to use that.
 
-Install SnarkJS following the instructions [here](https://github.com/iden3/snarkjs?tab=readme-ov-file#install-snarkjs), then generate the Solidity contract following the instructions [here](https://github.com/iden3/snarkjs?tab=readme-ov-file#25-turn-the-verifier-into-a-smart-contract).
+Install SnarkJS following the instructions [here](https://github.com/iden3/snarkjs?tab=readme-ov-file#install-snarkjs), then generate the Solidity contract following the instructions [here](https://github.com/iden3/snarkjs?tab=readme-ov-file#25-turn-the-verifier-into-a-smart-contract). You can then deploy this contract as part of your application.
 
 ### 4 Generate Verifier Inputs
 
@@ -81,7 +85,7 @@ Normally when you call [gpcVerify](https://docs.pcd.team/functions/_pcd_gpc.gpcV
 
 You can see the code in the FrogJuice app to generate `pubSignals` [here](https://github.com/BuidlGuidl/frogcrypto-squeeze/blob/main/packages/nextjs/app/page.tsx#L155).
 
-The `proof` and `pubSignals` are the data you need to pass on-chain, but they’ll need some conversion:
+The `proof` and `pubSignals` are the data you need to pass on-chain, but they'll need some conversion:
 
 - Make sure the `bigint` values in `pubSignals` are passed as strings: `pubSignals.map(s => s.toString())`
 - The calldata of the smart contract takes the proof elements in a slightly different order than used in TypeScript.  You'll need to manually reverse two of the sub-arrays of `pi_b` like FrogJuice does [here](https://github.com/BuidlGuidl/frogcrypto-squeeze/blob/main/packages/nextjs/app/page.tsx#L178), or else use a library that does so like SnarkJS [here](https://github.com/iden3/snarkjs/blob/master/src/groth16_exportsoliditycalldata.js#L29).
@@ -90,7 +94,7 @@ The `proof` and `pubSignals` are the data you need to pass on-chain, but they’
 
 You'll need off-chain code to capture the pre-processing output from Step 4, and set it up to pass to the Solidity verifier you generated in Step 3.  This should be mostly mechanical formatting of parameters, but can also be a place to integrate your own app-specific logic.
 
-Note that when string names and entry values are used in GPC circuits, they are always represented by their hash.  Hashes can be good enough for well-known constants (like common entry names, and known signing keys), but if your smart contract needs access to plaintext values, your off-chain setup code will need to pass them in as well.
+Note that when string names and entry values are used in GPC circuits, they are always represented by their hash. Hashes can be good enough for well-known constants (like common entry names, and known signing keys), but if your smart contract needs access to plaintext values, your off-chain setup code will need to pass them in as well. (Keep in mind these will become public on-chain as well.)
 
 At this point you should have what you need to call the `verifyProof` function in the generated smart contract and see that it returns true to indicate a valid proof. If it does, you still have some work to do as described in the [Verifying Securely](./verification) page. You still need to verify that it's a proof of the right configuration.  Otherwise a malicious prover could send you a proof with a config that doesn't constrain anything at all.  You can't trust the off-chain pre-verification to do this, since attackers could submit their own malicious inputs, so the smart contract needs to double-check.  Only after you've checked this should you start to make any decisions based on the values given. The following steps take you through how to do this post-verify checking with less help from the GPC compiler.
 
@@ -120,8 +124,8 @@ After you've verified all of the fixed signals, you're left with the variable si
 Note that public names and values from PODs are represented by their hash. When you know what name or value to expect, you can simply use the hash to identify the value you're looking for.  For variable values where you need to manipulate the plaintext, you'll need to have the raw value passed from off-chain. Your contract should then confirm that the hash matches the corresponding value in `pubSignals`, so attackers can't trick your contract into accepting the wrong values.
 
 To hash values in a way compatible with [podValueHash()](https://docs.pcd.team/functions/_pcd_pod.podValueHash.html) ([source code](https://github.com/proofcarryingdata/zupass/blob/bcfe298b103907fe2f2970eed548e0b948651a58/packages/lib/pod/src/podCrypto.ts#L60)), you'll need two types of hashes:
-- For numbers, use a Poseidon hash. You can see the library FrogJuice uses [here](https://github.com/BuidlGuidl/frogcrypto-squeeze/blob/main/packages/hardhat/contracts/Poseidon.sol).
-- For strings and bytes, you'll need a SHA256 hash followed by a right-shift, as shown [here](https://github.com/proofcarryingdata/zupass/blob/bcfe298b103907fe2f2970eed548e0b948651a58/packages/lib/pod/src/podCrypto.ts#L32).
+- For numbers, use a Poseidon hash. You can see the library FrogJuice uses in [Poseidon.sol](https://github.com/BuidlGuidl/frogcrypto-squeeze/blob/main/packages/hardhat/contracts/Poseidon.sol).
+- For strings and bytes, you'll need a SHA256 hash followed by a right-shift. An example Solidity implementation can be found in [StringSignalHash.sol](https://github.com/projectawakening/pod-flow/blob/main/packages/contracts/src/inherited/StringSignalHash.sol).
 
 You can see the code which FrogJuice uses to do these checks [here](https://github.com/BuidlGuidl/frogcrypto-squeeze/blob/main/packages/hardhat/contracts/FrogCryptoSqueeze.sol#L144).
 
