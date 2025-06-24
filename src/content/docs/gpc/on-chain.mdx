@@ -125,7 +125,7 @@ Note that public names and values from PODs are represented by their hash. When 
 
 To hash values in a way compatible with [podValueHash()](https://docs.pcd.team/functions/_pcd_pod.podValueHash.html) ([source code](https://github.com/proofcarryingdata/zupass/blob/bcfe298b103907fe2f2970eed548e0b948651a58/packages/lib/pod/src/podCrypto.ts#L60)), you'll need two types of hashes:
 - For numbers, use a Poseidon hash. You can see the library FrogJuice uses in [Poseidon.sol](https://github.com/BuidlGuidl/frogcrypto-squeeze/blob/main/packages/hardhat/contracts/Poseidon.sol).
-- For strings and bytes, you'll need a SHA256 hash followed by a right-shift. An example Solidity implementation can be found in [StringSignalHash.sol](https://github.com/projectawakening/pod-flow/blob/main/packages/contracts/src/inherited/StringSignalHash.sol).
+- For strings and bytes, you'll need a SHA256 hash, right-shifted by 8 bits. An example Solidity implementation can be found in [StringSignalHash.sol](https://github.com/projectawakening/pod-flow/blob/main/packages/contracts/src/inherited/StringSignalHash.sol).
 
 You can see the code which FrogJuice uses to do these checks [here](https://github.com/BuidlGuidl/frogcrypto-squeeze/blob/main/packages/hardhat/contracts/FrogCryptoSqueeze.sol#L144).
 
