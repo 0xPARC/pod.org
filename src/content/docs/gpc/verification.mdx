@@ -7,7 +7,7 @@ import { Aside } from '@astrojs/starlight/components';
 
 So you've learned how to [prove and verify](./proving-and-verifying), your app is ready to accept a ZK proof, and [gpcVerify()](https://docs.pcd.team/functions/_pcd_gpc.gpcVerify.html) returned true. So everything's done and your app is secure, right? Sadly it's not that simple, and there's still some work to be done. This page will take you through what you need to know and what your app should check to be sure a verified proof means what you want it to mean.
 
-### Ensuring Trust
+## Ensuring Trust
 
 [gpcVerify()](https://docs.pcd.team/functions/_pcd_gpc.gpcVerify.html) tells you you have a valid cryptographic proof of *something*, but it's up to you to ensure it's the right proof. 
 Put another way, [gpcVerify()](https://docs.pcd.team/functions/_pcd_gpc.gpcVerify.html) tells you that its 4 arguments ([proof](https://docs.pcd.team/types/_pcd_gpc.GPCProof.html), [config](https://docs.pcd.team/types/_pcd_gpc.GPCBoundConfig.html), [claims](https://docs.pcd.team/types/_pcd_gpc.GPCRevealedClaims.html), and [artifacts](./artifacts)) all correspond properly to each other, but you still need to check what each of them says individually.
