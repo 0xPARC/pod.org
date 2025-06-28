@@ -3,6 +3,78 @@ title: Verifying Securely
 description: How to trust that you have the right proof
 ---
 
-## Coming Soon
+import { Aside } from '@astrojs/starlight/components';
 
-Please pardon our dust as we finish this site.  In the mean time, check out the [learning resources](/learning).  You can also ask questions in our Telegram group at [t.me/zupass](https://t.me/zupass).
+So you've learned how to [prove and verify](./proving-and-verifying), your app is ready to accept a ZK proof, and [gpcVerify()](https://docs.pcd.team/functions/_pcd_gpc.gpcVerify.html) returned true. So everything's done and your app is secure, right? Sadly it's not that simple, and there's still some work to be done. This page will take you through what you need to know and what your app should check to be sure a verified proof means what you want it to mean.
+
+### Ensuring Trust
+
+[gpcVerify()](https://docs.pcd.team/functions/_pcd_gpc.gpcVerify.html) tells you you have a valid cryptographic proof of *something*, but it's up to you to ensure it's the right proof. 
+Put another way, [gpcVerify()](https://docs.pcd.team/functions/_pcd_gpc.gpcVerify.html) tells you that its 4 arguments ([proof](https://docs.pcd.team/types/_pcd_gpc.GPCProof.html), [config](https://docs.pcd.team/types/_pcd_gpc.GPCBoundConfig.html), [claims](https://docs.pcd.team/types/_pcd_gpc.GPCRevealedClaims.html), and [artifacts](./artifacts)) all correspond properly to each other, but you still need to check what each of them says individually.
+
+The guidance in this page is structured around what you need to trust, and what sort of malicious attacks you need to defend against.
+
+Some trust concerns affect how you design and build your app:
+
+- To trust the result of [gpcVerify()](https://docs.pcd.team/functions/_pcd_gpc.gpcVerify.html) you first need to ensure you're using [trustworthy code](#trusting-the-code).
+- You also need to ensure the [execution](#trusting-the-execution) of the verification isn't tampered with. Some scenarios can be safely verified in a browser, while others should happen server-side.
+
+Other concerns require specific checks your app should perform on each proof:
+
+- You need to check that the [proof configuration](#checking-config) matches your expectations, so a malicious prover can't send you a proof of something else.
+- You need to check the [revealed claims](#checking-claims) to ensure PODs are signed by trusted issuers, and contain values suitable for your app.
+- You need to ensure the proof was generated for the right purpose and not a [replay attack](#avoiding-reuse) using a proof generated at another time
+
+### Trusting the Code
+
+Trusting a GPC proof depends on the correctness of the ZK circuits, as well as the GPC library that sets up the inputs to those circuits. The code for both is freely available (see the [Developer Resources](./resources) page) to help you trust the authors, but keep in mind the [Disclaimers](./disclaimers). The POD and GPC libraries are in beta, and have not been subjected to a formal audit, so there may be bugs.
+
+Trusting the code you execute also means getting it from a trusted source. GPC [libraries](https://www.npmjs.com/package/@pcd/gpc) and [artifacts](https://www.npmjs.com/package/@pcd/proto-pod-gpc-artifacts) are distributed by 0xPARC via NPM. In the future, we may provide alternative distribution mechanisms, or extra layers of verification like code hashes or signing.
+
+### Trusting the Execution
+
+TypeScript and JavaScript execution is very dynamic and easily altered, so be careful about trusting results of verification code that you don't control. A key decision is whether to perform verification client-side (in the browser) or server-side. The right answer depends on whether the security of your app is protecting the user (and their private data) or protecting your app (centralized data or external resources).
+
+**Client-side verification** implies trusting the user themselves, since they could easily alter the code to always return true. If your app is helping the user protect themselves from external threats, then this is appropriate. Client-side verification helps keep a user's private data where it is in the user's control. This is also the reason that proving often happens client-side, where the user's private key is available.  You should be cautious about any security threats that could allow external websites to compromise the code running in your web client, such as cross-site injection attacks. For example, [Zupass](https://zupass.org) performs most of its proving and verification client-side, keeping private user data in local storage, but limits how other websites can interact using the [Z API](/z-api/introduction).
+
+**Server-side verification** implies trusting the server, and protecting it against potentially malicious users. This is appropriate if your app is using ZK proofs to grant access to shared resources, such as logging in to a forum, or checking in to a conference. Server-side verification shouldn't include any private data the user doesn't want known to the server. Limiting which fields are revealed in your proof configuration is a good way to ensure that. For example, [Zupass](https://zupass.org) uses server-side verification to authenticate users when they log in or try to download tickets.  This keeps a malicious user from impersonating another user to access their tickets.
+
+### Checking Config
+
+The [proof configuration](./proof-configuration) defines what the proof actually means. Because the GPC framework is flexible, it's important to check that the proof you verified actually proves what you intended.
+
+With full flexibility, examining a configuration to decide whether to accept it is a difficult problem. Fortunately, you know the needs of your app and what configuration it wants to use, so you probably only need to check that your specific expectations are met, perhaps with small variations.
+
+In many cases, your app will need only a single configuration, which can thus be baked into the prover and verifier. Even if there is variability, the proof is often generated based on a request from the verifier, who specifies the desired configuration and inputs. In this case, it's safest for the verifier to simply ignore the configuration returned by the prover, and use their own configuration to call [gpcVerify()](https://docs.pcd.team/functions/_pcd_gpc.gpcVerify.html). The only part of the [bound configuration](https://docs.pcd.team/types/_pcd_gpc.GPCBoundConfig.html) they need is the specific circuit identifier used to generate the proof.
+
+The [ZuKYC example app](./examples#zukyc) shows this pattern in action. Before the proof is generated, the verifier builds a [proof request](https://github.com/proofcarryingdata/zukyc/blob/main/apps/gpc-verifier/app/util/proofRequest.ts#L119) containing the desired config and inputs. Once the proof is available, the verifier creates a [bound config](https://github.com/proofcarryingdata/zukyc/blob/main/apps/gpc-verifier/app/util/verifyProof.ts#L32) based on their request (untouched by prover) and the circuit identifier from the prover. By passing this combined config to [gpcVerify()](https://github.com/proofcarryingdata/zukyc/blob/main/apps/gpc-verifier/app/util/verifyProof.ts#L59) the app double-checks that the proof matches the expected configuration.
+
+### Checking Claims
+
+The [revealed claims](https://docs.pcd.team/types/_pcd_gpc.GPCRevealedClaims.html) contain the data that most often varies between proofs, because it comes directly from the proof [inputs](https://docs.pcd.team/types/_pcd_gpc.GPCProofInputs.html). [gpcVerify()](https://docs.pcd.team/functions/_pcd_gpc.gpcVerify.html) will check the basic format of this data and ensure it matches the proof. Before going further, the verifier should make sure claims meet other security criteria. This may include checking against fixed values or more flexible criteria in a few categories:
+
+**Configured Inputs**: Some claims might represent a part of the configuration of the proof, and may come from a proof request sent by the verifier. These can be compared to fixed values, or even replaced with fixed values as described [above](#checking-config).
+
+**POD Signers**: PODs are only meaningful if you trust the issuer that signed them. The signing key of every POD should be checked in some way before you trust that POD's contents. Usually this is as simple as comparing the revealed value to a constant public key for a known issuer. If multiple issuers are trusted, you might check the revealed signer against a known set, or use a [list membership](./proof-configuration#entry-constraints) constraint to check the signer without revealing.
+
+**Transactional Info**: Extra inputs like the [watermark](./proof-configuration#other-inputs) and [nullifier](./identity-ownership#anonymity-and-nullifiers) are often used to tie a proof to a specific action in the app and avoid [replay attacks](#avoiding-reuse). Before using a nullifier hash, be sure to check that the corresponding external nullifier is the right one for your app. Watermarks might be checked against a fixed value, or used to carry other information from the prover.
+
+<Aside type="note" title="Fixed Values">
+It may be surprising that a proof config cannot constrain an entry or signing key to have a specific fixed value. This is because doing so would be equivalent to revealing that value, since there would be no uncertainty. This means including fixed-value checks in the ZK circuit would make the circuit larger without providing extra zero-knowledge guarantees.
+
+To avoid unnecessary complexity in the ZK circuit, such cases should be handled by revealing the value and checking it outside the circuit. In future library versions, extra out-of-circuit checks might be added to the GPC compiler to automate this functionality.
+</Aside>
+
+You can examine the post-verify checks used by the [ZuKYC example app](./examples#zukyc) in [this code](https://github.com/proofcarryingdata/zukyc/blob/main/apps/gpc-verifier/app/util/verifyProof.ts#L72).
+
+### Avoiding Reuse
+
+Like PODs, proofs are simply data, which can be freely copied. If your proof is constraining facts about PODs, those facts remain true. However, the semantics of your app probably place extra meaning on a proof tied to a user's intended actions, such as logging in from a specific browser, or sending a specific message, or voting in a poll. You should be careful that a malicious user can't steal PODs or reuse a proof for another intent, such as to log in from a different browser, send a different message, or vote twice in the same poll.
+
+Protecting against replay attacks might be accomplished within the constraints of your proof, such as a range check on a timestamp in a POD.  There are also three specialized features used to avoid reuse of PODs or proofs:
+
+**[Watermarks](./proof-configuration#other-inputs)** can contain any data unique to the proof. They are not constrained by the configuration, but cannot be altered without invalidating the proof. Thus they are ideal for tying a proof to a specific transaction. A watermark could be a timestamp allowing stale proofs to be discarded, or it could be a random nonce generated (by prover or verifier) at the beginning of a transaction. A watermark containing a string or bytes could carry a message or the details of a transaction. For instance, [ZuPoll](https://zupoll.org) uses its watermark to carry the contents of a user's ballot. (The current ZuPoll predates GPC so uses a hash of the ballot, but a GPC-based ZuPoll could use the full contents.)
+
+**[Ownership Constraints](./identity-ownership#proving-ownership)** can be used to ensure a user cannot make proofs about stolen PODs they do not own. Proving ownership ensures that only a user with a specific private key can generate a valid proof.  This provides guarantees about how the proof was generated. For instance, Zupass ticket proofs allow a user to make proofs only about tickets they own. An ownership check doesn't keep the proof itself from being stolen or reused, so consider a watermark for that.
+
+**[Nullifiers](./identity-ownership#anonymity-and-nullifiers)** are tied to the specific user identity that proved ownership of a POD. Nullifiers are used when you want the user to remain anonymous, but avoid duplicate transactions from the same user.  See the [Identity and Ownership](./identity-ownership) page for more details.
