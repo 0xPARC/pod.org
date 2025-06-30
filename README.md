@@ -1,19 +1,18 @@
-# Starlight Starter Kit: Tailwind
+# Welcome to pod.org!
+
+This site covers the POD ecosystem, including the POD data format, General Purpose Circuits for zero-knowledge proofs, and the Z API which provides a pre-built POD store and user interface for common interactions. You can read the documentation generated from this repo at [pod.org](https://pod.org).
+
+## Have feedback?
+
+Join the discussion with other developers on [Telegram](t.me/zupass).
+
+For corrections or feedback on this documentation can submit an [issue](https://github.com/0xPARC/pod.org/issues) or [pull request](https://github.com/0xPARC/pod.org/pulls).
+
+# 🚀 Starlight
 
 [![Built with Starlight](https://astro.badg.es/v2/built-with-starlight/tiny.svg)](https://starlight.astro.build)
 
-```
-npm create astro@latest -- --template starlight/tailwind
-```
-
-[![Open in StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz.svg)](https://stackblitz.com/github/withastro/starlight/tree/main/examples/tailwind)
-[![Open with CodeSandbox](https://assets.codesandbox.io/github/button-edit-lime.svg)](https://codesandbox.io/p/sandbox/github/withastro/starlight/tree/main/examples/tailwind)
-[![Deploy to Netlify](https://www.netlify.com/img/deploy/button.svg)](https://app.netlify.com/start/deploy?repository=https://github.com/withastro/starlight&create_from_path=examples/tailwind)
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fwithastro%2Fstarlight%2Ftree%2Fmain%2Fexamples%2Ftailwind&project-name=my-starlight-docs&repository-name=my-starlight-docs)
-
-> 🧑‍🚀 **Seasoned astronaut?** Delete this file. Have fun!
-
-## 🚀 Project Structure
+## Tailwind Project Structure
 
 Inside of your Astro + Starlight project, you'll see the following folders and files:
 
