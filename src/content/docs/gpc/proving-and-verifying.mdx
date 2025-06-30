@@ -81,4 +81,4 @@ Inside of [gpcVerify()](https://docs.pcd.team/functions/_pcd_gpc.gpcVerify.html)
 5. **Load Artifacts**: Form a URL or file path to the specific artifact (verification key) needed, then load it. This is a fetch from a URL if in browser, or a read from disk otherwise.
 6. **Verify Proof**: The cryptographic process of proof verification uses verification key to process the public signals and determine whether the proof is cryptographically valid.
 
-If you want to customize the verification process, you can call [gpcPreVerify()](https://docs.pcd.team/functions/_pcd_gpc.gpcPreVerify.html) to perform steps 1-5 without proof verification. This allows you to reuse the GPC compiler with your own verification stack, perhaps in preparation for [on-chain verification](./on-chain).
+If you want to customize the verification process, you can call [gpcPreVerify()](https://docs.pcd.team/functions/_pcd_gpc.gpcPreVerify.html) to perform steps 1-4 without proof verification. This allows you to reuse the GPC compiler with your own verification stack, perhaps in preparation for [on-chain verification](./on-chain).
