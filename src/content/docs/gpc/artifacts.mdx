@@ -10,7 +10,7 @@ GPC proofs use a family of configurable ZK circuits pre-built using the [Circom]
 
 ## Configurable Circuits
 
-GPC is named for the **General Purpose Circuits** used to make proofs. A ZK circuit can generate (and verify) a proof about numbers, some of which are secret while others are revealed. The [GPC compiler](./proving-and-verifying) handles translating your app's configuration and inputs into these raw numbers.
+GPC is named for the **General Purpose Circuits** used to make proofs. A ZK circuit can generate (and verify) a proof about numbers, some of which are secret while others are revealed. The [GPC compiler](https://github.com/0xPARC/pod.org/blob/main/src/assets/proving-and-verifying.jpg) handles translating your app's configuration and inputs into these raw numbers.
 
 GPC circuits provide flexibility in two key ways. A GPC circuit is made up of modules which can be configured and linked together to make different proofs. Each circuit is also a member of a family of circuits, each containing a different combination of modules. This section describes the circuits which make up a family, and how to understand the circuit identifier you'll see in your [bound config](https://docs.pcd.team/types/_pcd_gpc.GPCBoundConfig.html).
 
