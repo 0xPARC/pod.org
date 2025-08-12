@@ -16,7 +16,7 @@ GPC circuits provide flexibility in two key ways. A GPC circuit is made up of mo
 
 ### Modular Circuits
 
-GPC circuits are built from modules which implement reusable logic. These modules correspond to the constraints which appear in a [proof configuration](./proof-configuration). Each module is independent but can be linked to other modules to meet the needs of the proof.  Here are a few key examples of how modules are linked together:
+GPC circuits are built from modules which implement reusable logic. These modules correspond to the constraints which appear in a [proof configuration](./proof-configuration.mdx). Each module is independent but can be linked to other modules to meet the needs of the proof.  Here are a few key examples of how modules are linked together:
 
 - An **Object** module checks the signature of a single POD using its content ID and public key.
 - An **Entry** module checks that an entry's name hash and value hash are included in a Merkle tree rooted in its content ID. By linking the content ID to an Object module, we prove the entry is part of a specific POD. We can optionally reveal the value hash in an output of this module.
